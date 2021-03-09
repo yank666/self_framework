@@ -1,0 +1,2 @@
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\ar.exe qc libdecode.a  CMakeFiles/decode.dir/yolov5_decoding.cc.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\ranlib.exe libdecode.a

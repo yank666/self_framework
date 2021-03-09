@@ -1,6 +1,5 @@
 option(ENABLE_ST "default include test st" ON)
 
-
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(TEST_SOURCE_FILE ${TEST_DIR}/test_main.cpp)
 if(ENABLE_ST)
@@ -10,4 +9,4 @@ endif()
 
 enable_testing()
 add_executable(test_st ${TEST_SOURCE_FILE})
-target_link_libraries(test_st gtest)
+target_link_libraries(test_st gtest glog::glog)

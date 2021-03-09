@@ -1,0 +1,23 @@
+"D:\softwarePath\toolSoftware\Clion\CLion 2019.3.6\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_BUILD_TYPE=debug -G "CodeBlocks - MinGW Makefiles" D:\workBase\Goodlib\software_constauct_base
+CMake Warning at thirdparty/glog/CMakeLists.txt:63 (find_package):
+  By not providing "Findgflags.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "gflags", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "gflags" (requested
+  version 2.2.0) with any of the following names:
+
+    gflagsConfig.cmake
+    gflags-config.cmake
+
+  Add the installation prefix of "gflags" to CMAKE_PREFIX_PATH or set
+  "gflags_DIR" to a directory containing one of the above files.  If "gflags"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- Could NOT find Unwind (missing: Unwind_INCLUDE_DIR Unwind_LIBRARY Unwind_PLATFORM_LIBRARY) 
+===========face_decorator_stage.cc;fcos_decorator_stage.cc;pipeline.cc==================
+-- Configuring done
+-- Generating done
+-- Build files have been written to: D:/workBase/Goodlib/software_constauct_base/cmake-build-debug-mingw

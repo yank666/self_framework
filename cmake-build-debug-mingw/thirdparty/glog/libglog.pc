@@ -1,0 +1,10 @@
+prefix=C:/Program Files (x86)/Self_Architecture
+exec_prefix=C:/Program Files (x86)/Self_Architecture/bin
+libdir=C:/Program Files (x86)/Self_Architecture/lib
+includedir=C:/Program Files (x86)/Self_Architecture/include
+
+Name: libglog
+Description: Google Log (glog) C++ logging framework
+Version: 0.5.0
+Libs: -L${libdir} -lglog
+Cflags: -I${includedir}

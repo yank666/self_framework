@@ -1,0 +1,2 @@
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\ar.exe qc libglogd.a  CMakeFiles/glog.dir/src/demangle.cc.obj CMakeFiles/glog.dir/src/logging.cc.obj CMakeFiles/glog.dir/src/raw_logging.cc.obj CMakeFiles/glog.dir/src/symbolize.cc.obj CMakeFiles/glog.dir/src/utilities.cc.obj CMakeFiles/glog.dir/src/vlog_is_on.cc.obj CMakeFiles/glog.dir/src/signalhandler.cc.obj CMakeFiles/glog.dir/src/windows/port.cc.obj
+C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\ranlib.exe libglogd.a
