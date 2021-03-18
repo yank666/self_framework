@@ -8,8 +8,8 @@
 #include "pipeline.h"
 namespace pipeline {
 class FcosDerocatestage : public DecoratorStage {
-  bool StagePreProcess(char *input_array);
-  bool StagePostProcess();
+  bool StagePreProcess(const ProcessContextMap &conext_map);
+  bool StagePostProcess(const ProcessContextMap &conext_map);
 };
 }
 

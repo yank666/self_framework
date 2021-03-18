@@ -1,3 +1,0 @@
-"D:\softwarePath\toolSoftware\Clion\CLion 2019.3.6\bin\cmake\win\bin\cmake.exe" -E remove -f CMakeFiles\logging_unittest.dir/objects.a
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\ar.exe cr CMakeFiles\logging_unittest.dir/objects.a @CMakeFiles\logging_unittest.dir\objects1.rsp
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-R\bin\G__~1.EXE -g   -Wl,--whole-archive CMakeFiles\logging_unittest.dir/objects.a -Wl,--no-whole-archive  -o logging_unittest.exe -Wl,--out-implib,liblogging_unittest.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\logging_unittest.dir\linklibs.rsp

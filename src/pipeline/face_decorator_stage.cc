@@ -5,15 +5,15 @@
 #include <iostream>
 #include "register_stage.h"
 namespace pipeline {
-bool FaceDerocatestage::StagePreProcess(char *input_array) {
+bool FaceDerocatestage::StagePreProcess(const ProcessContextMap &conext_map) {
   std::cout << " Run FaceDerocatestage pre" << std::endl;
   return true;
 }
 
-bool FaceDerocatestage::StagePostProcess() {
+bool FaceDerocatestage::StagePostProcess(const ProcessContextMap &conext_map) {
   std::cout << " Run FaceDerocatestage post" << std::endl;
   return true;
   
 }
-REG_INFERENCE(face, std::make_shared<FaceDerocatestage>());
+REG_Stage(face, std::make_shared<FaceDerocatestage>());
 }

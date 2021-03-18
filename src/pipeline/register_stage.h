@@ -45,7 +45,7 @@ public:
   ~DeviceInferenceRegister() = default;
 };
 
-#define REG_INFERENCE(name, decoratorstage) \
+#define REG_Stage(name, decoratorstage) \
      DeviceInferenceRegister g_##name##_Inference_Reg(#name, decoratorstage);
 }
 #endif //SELF_ARCHITECTURE_REGISTER_STAGE_H
