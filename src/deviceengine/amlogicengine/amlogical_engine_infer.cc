@@ -3,7 +3,7 @@
 //
 #include "amlogical_engine_infer.h"
 #include <string>
-#include <unordered_map>
+//#include <unordered_map>
 #include <memory>
 #include "glog/logging.h"
 //#include "vnn_common/vnn_global.h"
@@ -12,11 +12,11 @@
 //#include "vnn_common/vnn_model.h"
 
 namespace device {
-int AmlogicEngine::CreateGraph(const std::string &binary_path) {
-  if(binary_path.empty()) {
-  LOG(ERROR) << "Create graph according binary path fail, due to binary path is invalid.";
-  return -1;
-  }
+int AmlogicEngine::CreateGraph() {
+//  if(binary_path.empty()) {
+//  LOG(ERROR) << "Create graph according binary path fail, due to binary path is invalid.";
+//  return -1;
+//  }
 //  vx_uint64 tms_start, tms_end, ms_val;
 //  tms_start = get_perf_count();
 //  self_graph_ = InitModel(binary_path);
@@ -43,7 +43,7 @@ int AmlogicEngine::CreateGraph(const std::string &binary_path) {
   return 0;
 }
 
-int AmlogicEngine::RunProcess(InferenceTensor &inputs) {
+int AmlogicEngine::RunProcess() {
 //  vsi_status status = VSI_FAILURE;
 //  vx_uint64 tms_start, tms_end, ms_val;
 //

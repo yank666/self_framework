@@ -9,6 +9,12 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include "glog/logging.h"
+#include "../parse/parse_config.h"
+#include "../deviceengine/abstractengine.h"
+#include "../deviceengine/amlogicengine/amlogical_engine_infer.h"
+
+
 namespace pipeline {
 class AbstractStage;
 using AbstractStagePtr = std::shared_ptr<AbstractStage>;
@@ -17,18 +23,6 @@ using contextPtr = std::shared_ptr<Context>;
 using ProcessContextMap = std::unordered_map<std::string,
                         std::pair<AbstractStagePtr, contextPtr>>;
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
-
-struct ModelConfig {
-  uint32_t model_position_;
-  std::string model_name_;
-  std::string model_binary_;
-  std::vector<std::vector<uint32_t>> model_inshape_;
-  std::vector<std::vector<uint32_t>> model_outshape_;
-  std::vector<uint32_t> model_norm_;
-  std::vector<uint32_t> model_mean_;
-};
-using ModelCfgPtr = std::shared_ptr<ModelConfig>;
-using ModelCfgList = std::vector<std::shared_ptr<ModelConfig>>;
 
 class Context {
 public:
@@ -61,9 +55,25 @@ protected:
 
 class DeviceStage : public AbstractStage {
 public:
-  DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg){};
+  DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg){
+    switch (1) {
+      case 0 : {
+
+        break;
+      }
+      case 1 : {
+        engine_ = std::make_shared<device::AmlogicEngine>(model_cfg);
+        break;
+      }
+      default:
+        LOG(ERROR) << "Init DeviceStaeg fail, model type has not support";
+    }
+  };
   ~DeviceStage() = default;
+  bool FillStagebyEngine();
   bool RunStage(const ProcessContextMap &conext_map);
+private:
+  std::shared_ptr<device::AbstractEngine> engine_;
 };
 using DeviceStagePtr = std::shared_ptr<DeviceStage>;
 

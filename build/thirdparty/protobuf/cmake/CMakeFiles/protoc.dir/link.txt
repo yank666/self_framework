@@ -1,0 +1,1 @@
+/usr/bin/c++  -fpic -g -rdynamic CMakeFiles/protoc.dir/__/src/google/protobuf/compiler/main.cc.o -o protoc-3.8.0.0  -Wl,-rpath,/usr/local/lib: libprotocd.a libprotobufd.a -lpthread /usr/local/lib/libz.so 

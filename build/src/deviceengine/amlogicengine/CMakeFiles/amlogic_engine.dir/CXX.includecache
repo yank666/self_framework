@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/abstractengine.h
+string
+-
+../parse/parse_config.h
+/home/yankai.yan/workbase/codeLib/refactor/src/parse/parse_config.h
+
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/amlogicengine/amlogical_engine_infer.cc
+amlogical_engine_infer.h
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/amlogicengine/amlogical_engine_infer.h
+string
+-
+memory
+-
+glog/logging.h
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/amlogicengine/glog/logging.h
+
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/amlogicengine/amlogical_engine_infer.h
+string
+-
+../abstractengine.h
+/home/yankai.yan/workbase/codeLib/refactor/src/deviceengine/abstractengine.h
+
+/home/yankai.yan/workbase/codeLib/refactor/src/parse/parse_config.h
+string
+-
+vector
+-
+memory
+-
+

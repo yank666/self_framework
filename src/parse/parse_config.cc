@@ -11,7 +11,7 @@
 #include "glog/logging.h"
 
 using google_FileInputStream = google::protobuf::io::FileInputStream;
-namespace parse{
+namespace pipeline{
 bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
                                        pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
@@ -34,19 +34,23 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     model_ptr->model_name_ = model_param.name();
     model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_position_= model_param.model_position();
-
+    model_ptr->model_type_ = model_param.infer_type();
     for (int i = 0; i < model_param.input_shape_size(); ++i) {
       ParserModel::BlobShape shape = model_param.input_shape(i);
+      std::vector<uint32_t> inputs;
       for (int j = 0; j < shape.dim_size(); ++j) {
-        model_ptr->model_inshape_.emplace_back(shape.dim(j));
+        inputs.push_back(shape.dim(j));
       }
+      model_ptr->model_inshape_.push_back(inputs);
     }
 
-    for (int i = 0; i < model_param.input_shape_size(); ++i) {
+    for (int i = 0; i < model_param.output_shape_size(); ++i) {
       ParserModel::BlobShape shape = model_param.output_shape(i);
+      std::vector<uint32_t> outputs;
       for (int j = 0; j < shape.dim_size(); ++j) {
-        model_ptr->model_outshape_.emplace_back(shape.dim(j));
+        outputs.emplace_back(shape.dim(j));
       }
+      model_ptr->model_outshape_.emplace_back(outputs);
     }
 
     for (int i = 0; i < model_param.mean_param_size(); ++i) {

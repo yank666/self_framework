@@ -11,10 +11,16 @@ enum ContextIdx: uint32_t {datainput = 0, dataoutput = 1, dataidx = 2};
 void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
   DeviceStagePtr model_inference_ptr = std::make_shared<DeviceStage>(model_cfg);
   if (model_inference_ptr == nullptr) {
-    LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
+    LOG(ERROR) << "Pipeline init failed, create DeviceStage return nullptr!";
     return;
   }
+  model_inference_ptr->FillStagebyEngine();
+
   contextPtr stage_context = std::make_shared<Context>();
+  if (model_inference_ptr == nullptr) {
+    LOG(ERROR) << "Pipeline init failed, create Context return nullptr!";
+    return;
+  }
   CreateContexts(stage_context, model_cfg);
 
   DecorStagePtr exec_stage_ptr =
@@ -23,12 +29,11 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
     stages_[model_cfg->model_position_].push_back(exec_stage_ptr);
     process_context_.insert(std::make_pair(
-        model_cfg->model_name_,
-                                           std::make_pair(exec_stage_ptr, stage_context)));
+        model_cfg->model_name_,std::make_pair(exec_stage_ptr, stage_context)));
   } else {
     stages_[model_cfg->model_position_].push_back(model_inference_ptr);
     process_context_.insert(std::make_pair(model_cfg->model_name_,
-                                           std::make_pair(model_inference_ptr, stage_context)));
+                        std::make_pair(model_inference_ptr, stage_context)));
   }
 }
 
@@ -97,8 +102,14 @@ contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name){
   return nullptr;
 }
 
+bool DeviceStage::FillStagebyEngine() {
+  engine_->CreateGraph();
+}
+
+
 bool DeviceStage::RunStage(const ProcessContextMap &conext_map) {
   // TODO：add run graph
+  engine_->RunProcess();
   std::cout << " Run DeviceStage" << stage_name_ <<std::endl;
 }
 

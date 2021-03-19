@@ -83,9 +83,11 @@ target_link_libraries(main glog::glog)
 add_subdirectory(src/pipeline)
 add_subdirectory(src/parse)
 add_subdirectory(src/deviceengine)
-message("==================${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-debug/thirdparty/protobuf/cmake========================")
+
 target_link_directories(parseconfig PUBLIC "/home/yankai.yan/workbase/codeLib/refactor/cmake-build-debug/thirdparty/protobuf/cmake")
-target_link_libraries(parseconfig proto_OBJS protobufd)
+target_link_libraries(parseconfig proto_OBJS protobuf)
+
+target_link_libraries(pipeline device_utile)
 target_link_libraries(main pipeline parseconfig)
 
 

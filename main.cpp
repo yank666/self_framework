@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 
   std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules/models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
-  parse::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  pipeline::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
 
   pipeline::Pipeline ss;
   char **input= nullptr;

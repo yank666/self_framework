@@ -6,19 +6,17 @@
 #define SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H
 
 #include <string>
-
+#include "../abstractengine.h"
 namespace device {
-struct InferenceTensor {};
-class AmlogicEngine {
+class AmlogicEngine : public AbstractEngine {
 public:
-  AmlogicEngine(std::string name_engine) : name_(name_engine) {}
-  virtual ~AmlogicEngine();
-  virtual int CreateGraph(const std::string &binary_path);
-  virtual int RunProcess(InferenceTensor &inputs);
+  AmlogicEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr){}
+   ~AmlogicEngine() = default;
+  int CreateGraph();
+  int RunProcess();
 
 protected:
   //  vsi_nn_graph_t *self_graph_ = NULL;
-  std::string name_;
 };
 }
 #endif // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H

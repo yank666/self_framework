@@ -24,7 +24,7 @@ message ModelParameter {
 message InferConfigParameter {
    string name = 1;
    string infer_config_type = 2; //config type,such as modelInferEngine(any model), detect, classify or other functional model
-   string infer_type = 3; //infer type, such as MNN, TensorRT, Tengine, FPGA, NNIE
+   string infer_type = 3; //infer type, such as trt, nb or others
    string model_input_data_format = 4; //GRAY8, BGR24_PLANNER, RGB24_PLANNER
    string model_binary = 5;
    string weight_file = 6;
