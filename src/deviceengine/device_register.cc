@@ -9,7 +9,8 @@ const std::unordered_map<std::string, uint32_t> kSwitchModelType = {
     {"nb", 1},
 };
 void DeviceInferenceFactory::Register(const std::string &name_inference,
-    const std::string &type_inference, AbsEngine device_inferencer) {
+    const std::string &type_inference,
+                                      AbsEnginePtr device_inferencer) {
   uint32_t model_type  = kSwitchModelType.at(type_inference);
   switch (model_type) {
   case 0 : {
@@ -21,7 +22,7 @@ void DeviceInferenceFactory::Register(const std::string &name_inference,
     break;
   }
   default:
-    LOG(ERROR) << "Can't support model type in device Register!";
+//    LOG(ERROR) << "Can't support model type in device Register!";
     return;
   }
 }
@@ -30,9 +31,10 @@ DeviceInferenceFactory& DeviceInferenceFactory::GetInstance() {
   return instance;
 }
 
-AbsEngine DeviceInferenceFactory::GetDeviceInference(
+AbsEnginePtr
+DeviceInferenceFactory::GetDeviceInference(
                                const std::string name, const std::string type) {
-  AbsEngine ret_device_infer = nullptr;
+  AbsEnginePtr ret_device_infer = nullptr;
   switch (kSwitchModelType.at(type)) {
   case 0 : {
     ret_device_infer = SelectEnginebyType(name, &trt_creator_);
@@ -43,16 +45,17 @@ AbsEngine DeviceInferenceFactory::GetDeviceInference(
     break;
   }
   default:
-    LOG(ERROR) << "Can't support model type in device Register!";
+//    LOG(ERROR) << "Can't support model type in device Register!";
     return nullptr;
   }
+  return nullptr;
 }
 
-AbsEngine SelectEnginebyType(const std::string name,
-std::unordered_map<std::string, AbsEngine> *engine_map) {
+AbsEnginePtr DeviceInferenceFactory::SelectEnginebyType(const std::string name,
+                    std::unordered_map<std::string, AbsEnginePtr> *engine_map) {
   auto iter = engine_map->find(name);
   if (iter == engine_map->end()) {
-    LOG(ERROR) << "DeviceInferenceFactory can't find inference_creator_ KEY: " << iter->first;
+//    LOG(ERROR) << "DeviceInferenceFactory can't find inference_creator_ KEY: " << iter->first;
     return nullptr;
   }
   return iter->second;

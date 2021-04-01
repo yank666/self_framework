@@ -5,7 +5,7 @@
 #include <string>
 //#include <unordered_map>
 #include <memory>
-#include "glog/logging.h"
+//#include "glog/logging.h"
 //#include "vnn_common/vnn_global.h"
 //#include "vnn_common/vnn_pre_process.h"
 //#include "vnn_common/vnn_post_process.h"

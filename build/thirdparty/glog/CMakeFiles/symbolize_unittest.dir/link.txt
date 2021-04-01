@@ -1,1 +1,0 @@
-/usr/bin/c++  -fpic -g -rdynamic CMakeFiles/symbolize_unittest.dir/src/symbolize_unittest.cc.o -o symbolize_unittest  libglogd.a -lpthread 

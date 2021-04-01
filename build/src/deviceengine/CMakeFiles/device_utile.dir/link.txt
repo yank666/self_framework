@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -fpic -g -shared -Wl,-soname,libdevice_utile.so -o libdevice_utile.so CMakeFiles/device_utile.dir/abstractengine.cc.o CMakeFiles/device_utile.dir/device_register.cc.o  -Wl,-rpath,/home/yankai.yan/workbase/codeLib/refactor/build/src/deviceengine/amlogicengine amlogicengine/libamlogic_engine.so 

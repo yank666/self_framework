@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -fpic -g -shared -Wl,-soname,libproto_OBJS.so -o libproto_OBJS.so CMakeFiles/proto_OBJS.dir/modules/proto/parser.pb.cc.o 

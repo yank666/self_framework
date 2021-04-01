@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -fpic -g -shared -Wl,-soname,libamlogic_engine.so -o libamlogic_engine.so CMakeFiles/amlogic_engine.dir/amlogical_engine_infer.cc.o 

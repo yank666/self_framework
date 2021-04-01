@@ -9,8 +9,6 @@
  -------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
-#include <android/log.h>
-
 #include "vsi_nn_pub.h"
 
 #include "vnn_global.h"
@@ -75,7 +73,6 @@ vsi_nn_graph_t * vnn_CreateDetectionSimply
     uint32_t post_process_map_count
     )
 {
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_1");
 
     vsi_status              status;
     vsi_bool                release_ctx;
@@ -93,28 +90,20 @@ vsi_nn_graph_t * vnn_CreateDetectionSimply
 
 
 
-
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_2");
-
     ctx = NULL;
     graph = NULL;
     status = VSI_FAILURE;
 
-        __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_3");
 
     memset( &attr, 0, sizeof( attr ) );
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_4");
 
     fp = fopen( data_file_name, "rb" );
     if( NULL == fp )
     {
         VSILOGE( "Open file %s failed.", data_file_name );
-        __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "Open file %s failed.", data_file_name);
         goto error;
     }
-
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_5");
 
     if( NULL == in_ctx )
     {
@@ -125,27 +114,20 @@ vsi_nn_graph_t * vnn_CreateDetectionSimply
         ctx = in_ctx;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_6");
-
     graph = vsi_nn_CreateGraph( ctx, NET_TOTAL_TENSOR_NUM, NET_NODE_NUM );
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_7");
     if( NULL == graph )
     {
         VSILOGE( "Create graph fail." );
         goto error;
     }
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_8");
     vsi_nn_SetGraphVersion( graph, VNN_VERSION_MAJOR, VNN_VERSION_MINOR, VNN_VERSION_PATCH );
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_9");
     vsi_nn_SetGraphInputs( graph, NULL, 1 );
 
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_10");
     vsi_nn_SetGraphOutputs( graph, NULL, 2 );
 
-__android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_11");
 /*-----------------------------------------
   Register client ops
  -----------------------------------------*/
@@ -205,9 +187,6 @@ __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_11
 
 
 
-__android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_12");
-
-
 
 /*-----------------------------------------
   Connection initialize
@@ -224,7 +203,6 @@ __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_12
     graph->output.tensors[1] = norm_tensor[1];
     graph->input.tensors[0] = norm_tensor[2];
 
-__android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_13");
     use_img_process_s = getenv( "VSI_USE_IMAGE_PROCESS" );
     if( use_img_process_s )
     {
@@ -263,7 +241,6 @@ __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_13
         TEST_CHECK_STATUS( status, error );
     }
 
-__android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vnn_CreateDetectionSimply_14");
     if( VSI_FAILURE == status )
     {
         goto error;
@@ -278,14 +255,11 @@ error:
     {
         fclose( fp );
     }
-    __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "Open file failed error1.");
 
     release_ctx = ( NULL == in_ctx );
-     __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "Open file failed error2.");
     vsi_nn_DumpGraphToJson( graph );
-     __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "Open file failed error3.");
     vnn_ReleaseModel( graph, release_ctx );
-     __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "Open file failed error4.");
+
 
     return NULL;
 } /* vsi_nn_CreateDetectionSimply() */

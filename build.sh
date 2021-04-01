@@ -18,7 +18,7 @@ usage()
   echo "    -t Run testcases, default off"
   echo "    -b Select engine backend, available: trt(GPU) or nb(Amlogic)"
   echo "    -e Select compile runtime backend, linux or andriod"
-  echo "    -k Enable make clean, clean up compilation generated cache "
+  echo "    -k [on/off] Enable make clean, clean up compilation generated cache "
 }
 
 check_on_off()
@@ -70,7 +70,7 @@ checkopts()
           ENABLE_ENGINE_TYPE=$(echo "$OPTARG" | tr '[a-z]' '[A-Z]')
           ;;
         e)
-          if [[ "X$OPTARG" != "Xlinux" && "X$OPTARG" != "Xandriod" ]]; then
+          if [[ "X$OPTARG" != "Xlinux" && "X$OPTARG" != "Xandroid" ]]; then
             echo "Invalid value ${OPTARG} for option -e"
             usage
             exit 1
@@ -90,9 +90,15 @@ checkopts()
   done
 }
 
-checkopts "$@"
-echo "---------------- build start ----------------"
-#  git submodule update --init
+checkndk() {
+    if [ "${ANDROID_NDK}" ]; then
+        echo -e "\e[31mANDROID_NDK_PATH=$ANDROID_NDK  \e[0m"
+    else
+        echo -e "\e[31mplease set ANDROID_NDK in environment variable for example: export ANDROID_NDK=/root/usr/android-ndk-r20b/ \e[0m"
+        exit 1
+    fi
+}
+
 make_clean()
 {
   echo "enbale make clean"
@@ -110,12 +116,25 @@ build_project()
   fi
   CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_PATH=$BUILD_PATH"
   CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_ENGINE_TYPE=$ENABLE_ENGINE_TYPE"
-  CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_DEVICE=$DEVICE"
-  echo "=================${CMAKE_ARGS}========================="
-  cmake ${CMAKE_ARGS} ..
-  cmake --build . ${CMAKE_VERBOSE} -j$THREAD_NUM
+#  CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_DEVICE=$DEVICE"
+  if [[ "${DEVICE}" == "ANDROID" ]]; then
+    checkndk
+    cmake -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL="28" \
+    -DANDROID_NDK="${ANDROID_NDK}" -DANDROID_ABI="armeabi-v7a" -DANDROID_TOOLCHAIN_NAME="aarch64-linux-android-clang" \
+    -DANDROID_STL=${ANDROID_STL} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}  -DENABLE_ENGINE_TYPE="$ENABLE_ENGINE_TYPE" \
+    ..
+    make -j$THREAD_NUM
+  else
+     echo "=================${CMAKE_ARGS}========================="
+     cmake ${CMAKE_ARGS} ..
+     cmake --build . ${CMAKE_VERBOSE} -j$THREAD_NUM
+  fi
+
 }
 
+checkopts "$@"
+echo "---------------- build start ----------------"
+ git submodule update --init
 
   if [[ "X$ENABLE_MAKE_CLEAN" = "Xon" ]]; then
     make_clean
