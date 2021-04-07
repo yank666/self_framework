@@ -15,7 +15,7 @@ set(GTEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gtest/)
 set(PROTOBUF_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/protobuf)
 set(GLOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog)
 #set(EIGEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/eigen)
-
+set(protobuf_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 #include(FetchContent)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${GTEST_DIR}/googletest/include)
