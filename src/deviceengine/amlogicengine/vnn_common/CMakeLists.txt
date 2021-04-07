@@ -9,7 +9,6 @@ include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk_interface/include/appli
 
 file(GLOB_RECURSE AMLOGIC_COMMON_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.c"
-        #        "vnn_common/*.c"
         )
 
 add_library(amlogic_common SHARED ${AMLOGIC_COMMON_LIST})

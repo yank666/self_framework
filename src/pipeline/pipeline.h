@@ -13,6 +13,7 @@
 #include "../parse/parse_config.h"
 #include "../deviceengine/abstractengine.h"
 #include "../deviceengine/amlogicengine/amlogical_engine_infer.h"
+#include "../deviceengine/trtengine/trt_engine_infer.h"
 
 
 namespace pipeline {
@@ -23,6 +24,11 @@ using contextPtr = std::shared_ptr<Context>;
 using ProcessContextMap = std::unordered_map<std::string,
                         std::pair<AbstractStagePtr, contextPtr>>;
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
+
+enum kEngineType : int {begintype = 0, trttype = 1, amlogicaltype = 2, endtype = 3};
+const std::unordered_map<std::string, kEngineType> kEngineTypeSwitch = {
+    {"trt", trttype}, {"nb", amlogicaltype}
+};
 
 class Context {
 public:
@@ -56,17 +62,22 @@ protected:
 class DeviceStage : public AbstractStage {
 public:
   DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg){
-    switch (1) {
-      case 0 : {
-
-        break;
+    auto engine_item = kEngineTypeSwitch.find(model_cfg->model_type_);
+     if (engine_item != kEngineTypeSwitch.end()) {
+      switch (engine_item->second) {
+        case 0 : {
+          engine_ = std::make_shared<device::TRTEngine>(model_cfg);
+          break;
+        }
+        case 1 : {
+          engine_ = std::make_shared<device::AmlogicEngine>(model_cfg);
+          break;
+        }
+        default:
+          LOG(ERROR) << "Init DeviceStaeg fail, model type has not support";
       }
-      case 1 : {
-        engine_ = std::make_shared<device::AmlogicEngine>(model_cfg);
-        break;
-      }
-      default:
-        LOG(ERROR) << "Init DeviceStaeg fail, model type has not support";
+    } else {
+      LOG(ERROR) << "Not support engine type: " <<model_cfg->model_type_;
     }
   };
   ~DeviceStage() = default;

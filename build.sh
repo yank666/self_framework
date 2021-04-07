@@ -122,7 +122,7 @@ build_project()
     cmake -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL="28" \
     -DANDROID_NDK="${ANDROID_NDK}" -DANDROID_ABI="armeabi-v7a" -DANDROID_TOOLCHAIN_NAME="aarch64-linux-android-clang" \
     -DANDROID_STL=${ANDROID_STL} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}  -DENABLE_ENGINE_TYPE="$ENABLE_ENGINE_TYPE" \
-    ..
+    -DENABLE_DEVICE=$DEVICE ..
     make -j$THREAD_NUM
   else
      echo "=================${CMAKE_ARGS}========================="
