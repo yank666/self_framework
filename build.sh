@@ -19,7 +19,7 @@ usage()
   echo "    -b Select engine backend, available: trt(GPU) or nb(Amlogic)"
   echo "    -e Select compile runtime backend, linux or andriod"
   echo "    -k [on/off] Enable make clean, clean up compilation generated cache "
-  echo "    -p [on/off] Enable compile protoc, to create new *.pb.cc and *.pb.h"
+  echo "    -p [on/off] to update new *.pb.cc and *.pb.h, Enable compile protoc"
 }
 
 check_on_off()
