@@ -19,6 +19,7 @@ usage()
   echo "    -b Select engine backend, available: trt(GPU) or nb(Amlogic)"
   echo "    -e Select compile runtime backend, linux or andriod"
   echo "    -k [on/off] Enable make clean, clean up compilation generated cache "
+  echo "    -p [on/off] Enable compile protoc, to create new *.pb.cc and *.pb.h"
 }
 
 check_on_off()
@@ -44,8 +45,9 @@ checkopts()
   ENABLE_ENGINE_TYPE="nb"
   DEVICE="linux"
   ENABLE_MAKE_CLEAN="off"
+  ENABLE_PROTOC="off"
   # Process the options
-  while getopts 'drvj:t:b:e:k:' opt
+  while getopts 'drvj:t:b:e:k:p:' opt
   do
     OPTARG=$(echo ${OPTARG} | tr '[A-Z]' '[a-z]')
       case "${opt}" in
@@ -81,6 +83,11 @@ checkopts()
           check_on_off $OPTARG k
           ENABLE_MAKE_CLEAN="$OPTARG"
           echo "enable make clean"
+          ;;
+        p)
+          check_on_off $OPTARG p
+          ENABLE_PROTOC="$OPTARG"
+          echo "enable compile protoc"
           ;;
         *)
           echo "Unknown option ${opt}!"
@@ -135,10 +142,17 @@ build_project()
 checkopts "$@"
 echo "---------------- build start ----------------"
  git submodule update --init
-
+  if [[ "X$ENABLE_PROTOC" = "Xon" ]]; then
+    cd cmake/
+    mkdir -pv "build_dependency/"
+    cd build_dependency
+    cmake -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dbase_path="${BASEPATH}" ..
+    make -j$THREAD_NUM
+    exit 0
+  fi
   if [[ "X$ENABLE_MAKE_CLEAN" = "Xon" ]]; then
     make_clean
-  else
+  elif [[ "X$ENABLE_MAKE_CLEAN" = "Xoff" ]]; then
     build_project
   fi
   echo "----------------   build end   ----------------"
