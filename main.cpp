@@ -6,10 +6,10 @@
 //#include <omp.h>
 #include "glog/logging.h"
 //#include "Eigen/Dense"
-#include "src/pipeline/pipeline.h"
-#include "src/pipeline/register_stage.h"
-#include "src/pipeline/face_decorator_stage.h"
 #include "src/parse/parse_config.h"
+#include "src/pipeline/face_decorator_stage.h"
+#include "src/pipeline/pipeline.h"
+#include "src/pipeline/stage_register.h"
 
 char* ReadFromFile(std::string file_name, size_t memlen) {
   std::ifstream fin(file_name, std::ios::binary);

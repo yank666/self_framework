@@ -5,16 +5,15 @@
 #ifndef SELF_ARCHITECTURE_PIPELINE_H
 #define SELF_ARCHITECTURE_PIPELINE_H
 
-#include <vector>
-#include <string>
-#include <memory>
-#include <unordered_map>
-#include "glog/logging.h"
-#include "../parse/parse_config.h"
 #include "../deviceengine/abstractengine.h"
 #include "../deviceengine/amlogicengine/amlogical_engine_infer.h"
-#include "../deviceengine/trtengine/trt_engine_infer.h"
-
+#include "../deviceengine/trtengine/trt_engine.h"
+#include "../parse/parse_config.h"
+#include "glog/logging.h"
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace pipeline {
 class AbstractStage;
@@ -44,7 +43,7 @@ public:
 
 class AbstractStage {
 public:
-  AbstractStage(const ModelCfgPtr& model_cfg) : stage_cfg_(model_cfg){
+  AbstractStage(const ModelCfgPtr& model_cfg) : stage_cfg_(model_cfg) {
     if (model_cfg != nullptr) {
       stage_name_ = model_cfg->model_name_;
     }
@@ -61,25 +60,7 @@ protected:
 
 class DeviceStage : public AbstractStage {
 public:
-  DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg){
-    auto engine_item = kEngineTypeSwitch.find(model_cfg->model_type_);
-     if (engine_item != kEngineTypeSwitch.end()) {
-      switch (engine_item->second) {
-        case 0 : {
-          engine_ = std::make_shared<device::TRTEngine>(model_cfg);
-          break;
-        }
-        case 1 : {
-          engine_ = std::make_shared<device::AmlogicEngine>(model_cfg);
-          break;
-        }
-        default:
-          LOG(ERROR) << "Init DeviceStaeg fail, model type has not support";
-      }
-    } else {
-      LOG(ERROR) << "Not support engine type: " <<model_cfg->model_type_;
-    }
-  };
+  DeviceStage(const ModelCfgPtr& model_cfg);
   ~DeviceStage() = default;
   bool FillStagebyEngine();
   bool RunStage(const ProcessContextMap &conext_map);

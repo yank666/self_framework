@@ -8,7 +8,7 @@ const std::unordered_map<std::string, uint32_t> kSwitchModelType = {
     {"trt", 0},
     {"nb", 1},
 };
-void DeviceInferenceFactory::Register(const std::string &name_inference,
+void DeviceEngineFactory::Register(const std::string &name_inference,
     const std::string &type_inference,
                                       AbsEnginePtr device_inferencer) {
   uint32_t model_type  = kSwitchModelType.at(type_inference);
@@ -26,14 +26,13 @@ void DeviceInferenceFactory::Register(const std::string &name_inference,
     return;
   }
 }
-DeviceInferenceFactory& DeviceInferenceFactory::GetInstance() {
-  static DeviceInferenceFactory instance;
+DeviceEngineFactory& DeviceEngineFactory::GetInstance() {
+  static DeviceEngineFactory instance;
   return instance;
 }
 
-AbsEnginePtr
-DeviceInferenceFactory::GetDeviceInference(
-                               const std::string name, const std::string type) {
+AbsEnginePtr DeviceEngineFactory::GetDeviceInference(
+                            const std::string name, const std::string type) {
   AbsEnginePtr ret_device_infer = nullptr;
   switch (kSwitchModelType.at(type)) {
   case 0 : {
@@ -48,14 +47,14 @@ DeviceInferenceFactory::GetDeviceInference(
 //    LOG(ERROR) << "Can't support model type in device Register!";
     return nullptr;
   }
-  return nullptr;
+  return ret_device_infer;
 }
 
-AbsEnginePtr DeviceInferenceFactory::SelectEnginebyType(const std::string name,
+AbsEnginePtr DeviceEngineFactory::SelectEnginebyType(const std::string name,
                     std::unordered_map<std::string, AbsEnginePtr> *engine_map) {
   auto iter = engine_map->find(name);
   if (iter == engine_map->end()) {
-//    LOG(ERROR) << "DeviceInferenceFactory can't find inference_creator_ KEY: " << iter->first;
+//    LOG(ERROR) << "DeviceEngineFactory can't find inference_creator_ KEY: " << iter->first;
     return nullptr;
   }
   return iter->second;

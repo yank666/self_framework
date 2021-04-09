@@ -1,7 +1,7 @@
 //
 // Created by yankai.yan on 2021/3/18.
 //
-#include "trt_engine_infer.h"
+#include "trt_engine.h"
 #include <string>
 //#include <unordered_map>
 #include <memory>
@@ -12,13 +12,13 @@
 //#include "vnn_common/vnn_model.h"
 
 namespace device {
-//int TRTEngine::CreateGraph() {
-//
-//  return 0;
-//}
-//
-//int TRTEngine::RunProcess() {
-//
-//  return 0;
-//}
+int TRTEngine::CreateGraph() {
+
+  return 0;
+}
+
+int TRTEngine::RunProcess() {
+
+  return 0;
+}
 }

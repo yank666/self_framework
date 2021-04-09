@@ -12,38 +12,34 @@
 //#include "vsi_nn_pub.h"
 namespace device {
 using AbsEnginePtr = std::shared_ptr<AbstractEngine>;
-class DeviceInferenceFactory {
+class DeviceEngineFactory {
 public:
-  DeviceInferenceFactory() = default;
-  ~DeviceInferenceFactory() = default;
+  DeviceEngineFactory() = default;
+  ~DeviceEngineFactory() = default;
   void Register(const std::string &name_inference,
             const std::string &type_inference,
                 AbsEnginePtr device_inferencer);
 
-  static DeviceInferenceFactory &GetInstance();
-
+  static DeviceEngineFactory &GetInstance();
   AbsEnginePtr GetDeviceInference(const std::string name, const std::string type);
-
-  AbsEnginePtr
-  SelectEnginebyType(const std::string name,
+  AbsEnginePtr SelectEnginebyType(const std::string name,
                     std::unordered_map<std::string, AbsEnginePtr> *engine_map);
-
 private:
   std::unordered_map<std::string, AbsEnginePtr> trt_creator_;
   std::unordered_map<std::string, AbsEnginePtr> nb_creator_;
 };
 
-class DeviceRegister {
+class DeviceEngineRegister {
 public:
-  DeviceRegister(const std::string &name_inference, const std::string &type_inference,
+  DeviceEngineRegister(const std::string &name_inference, const std::string &type_inference,
                  AbsEnginePtr device_inferencer) {
-    DeviceInferenceFactory::GetInstance().Register(
+    DeviceEngineFactory::GetInstance().Register(
                              name_inference, type_inference, device_inferencer);
   }
-  ~DeviceRegister() = default;
+  ~DeviceEngineRegister() = default;
 };
 
 #define REG_DeviceEngine(name, type, inferencer) \
-    DeviceRegister g_##name##_##type##_Engine_Reg(#name, #type, inferencer);
+  DeviceEngineRegister g_##name##_##type##_Engine_Reg(#name, #type, inferencer);
 }
 #endif // SELF_ARCHITECTURE_DEVICE_REGISTER_H

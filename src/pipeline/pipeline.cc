@@ -1,10 +1,10 @@
 #include "pipeline.h"
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 #include "glog/logging.h"
-#include "register_stage.h"
-
+#include "stage_register.h"
+#include "../deviceengine/device_register.h"
 namespace pipeline{
 enum ContextIdx: uint32_t {datainput = 0, dataoutput = 1, dataidx = 2};
 
@@ -102,10 +102,19 @@ contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name){
   return nullptr;
 }
 
+DeviceStage::DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg) {
+  engine_ = device::DeviceEngineFactory::GetInstance().GetDeviceInference(
+      model_cfg->model_name_, model_cfg->model_type_);
+  engine_->SetModelCfg(model_cfg);
+};
+
 bool DeviceStage::FillStagebyEngine() {
+  if (engine_ == nullptr) {
+//    LOG(ERROR) << "DeviceStage obtain engine is nullptr";
+    return false;
+  }
   engine_->CreateGraph();
 }
-
 
 bool DeviceStage::RunStage(const ProcessContextMap &conext_map) {
   // TODO：add run graph

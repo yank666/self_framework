@@ -1,5 +1,0 @@
-file(GLOB_RECURSE TRT_ENGINE_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-        "*.cc"
-        )
-
-add_library(trt_engine SHARED ${TRT_ENGINE_SRC_LIST})

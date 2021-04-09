@@ -1,9 +1,9 @@
 #include "face_decorator_stage.h"
-#include <vector>
-#include <unordered_map>
-#include <string>
+#include "stage_register.h"
 #include <iostream>
-#include "register_stage.h"
+#include <string>
+#include <unordered_map>
+#include <vector>
 namespace pipeline {
 bool FaceDerocatestage::StagePreProcess(const ProcessContextMap &conext_map) {
   std::cout << " Run FaceDerocatestage pre" << std::endl;

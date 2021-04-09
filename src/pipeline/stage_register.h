@@ -1,8 +1,8 @@
 //
 // Created by yankai on 2021/3/5.
 //
-#ifndef SELF_ARCHITECTURE_REGISTER_STAGE_H
-#define SELF_ARCHITECTURE_REGISTER_STAGE_H
+#ifndef SELF_ARCHITECTURE_STAGE_REGISTER_H
+#define SELF_ARCHITECTURE_STAGE_REGISTER_H
 #include "pipeline.h"
 #include <unordered_map>
 namespace pipeline {
@@ -48,4 +48,4 @@ public:
 #define REG_Stage(name, decoratorstage) \
      DeviceInferenceRegister g_##name##_Inference_Reg(#name, decoratorstage);
 }
-#endif //SELF_ARCHITECTURE_REGISTER_STAGE_H
+#endif // SELF_ARCHITECTURE_STAGE_REGISTER_H

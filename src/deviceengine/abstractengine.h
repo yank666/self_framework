@@ -15,7 +15,7 @@ public:
   virtual ~AbstractEngine() = default;
   virtual int CreateGraph() = 0;
   virtual int RunProcess() = 0;
-
+  bool SetModelCfg(ModelCfgPtr model_cfg_ptr);
 protected:
   pipeline::ModelCfgPtr model_cfg_;
 };
