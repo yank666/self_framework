@@ -68,8 +68,7 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     }
     model_list->emplace_back(model_ptr);
   }
-
-
+  LOG(INFO) << "Parse config file Success";
   return true;
 }
 };

@@ -51,17 +51,17 @@ public:
 
 int main(int argc, char **argv) {
   FLAGS_minloglevel = 0;
-  google::InitGoogleLogging(argv[0]);
+//  google::InitGoogleLogging(argv[0]);
 
-  std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules/models.cfg";
+  std::string model_cfg_file = "./models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   pipeline::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
 
   pipeline::Pipeline ss;
   char **input= nullptr;
-  
   ss.InitPipeline(cfg_vec, input);
   ss.RunPipeline();
+  LOG(INFO) << "Run SUCCESS!";
   return 0;
 
 }

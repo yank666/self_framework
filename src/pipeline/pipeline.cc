@@ -15,14 +15,12 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
     return;
   }
   model_inference_ptr->FillStagebyEngine();
-
   contextPtr stage_context = std::make_shared<Context>();
-  if (model_inference_ptr == nullptr) {
+  if (stage_context == nullptr) {
     LOG(ERROR) << "Pipeline init failed, create Context return nullptr!";
     return;
   }
   CreateContexts(stage_context, model_cfg);
-
   DecorStagePtr exec_stage_ptr =
       DeviceInferenceFactory::GetInstance().GetDeviceInference(model_inference_ptr->GetModelName());
   if (exec_stage_ptr != nullptr) {
@@ -61,12 +59,13 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr, const ModelCfgP
   }
   cur_context_ptr->datasize_[dataoutput] = output_sum;
   cur_context_ptr->dataflow_[dataoutput].resize(output_sum);
+  return true;
 }
 
 bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
                                   char **input_data) {
   if (model_cfgs.empty()) {
-//    LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
+    LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
     return false;
   }
   stages_.resize(model_cfgs.size());
@@ -81,6 +80,7 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
 //    memcpy(stage_data_input.data(), input_data[i],
 //        cut_stage_ctx->datasize_[datainput] * sizeof(float));
   }
+  return true;
 }
 
 void Pipeline::RunPipeline() {
@@ -110,22 +110,24 @@ DeviceStage::DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg
 
 bool DeviceStage::FillStagebyEngine() {
   if (engine_ == nullptr) {
-//    LOG(ERROR) << "DeviceStage obtain engine is nullptr";
+    LOG(ERROR) << "DeviceStage obtain engine is nullptr";
     return false;
   }
   engine_->CreateGraph();
+  return true;
 }
 
 bool DeviceStage::RunStage(const ProcessContextMap &conext_map) {
   // TODO：add run graph
   engine_->RunProcess();
-  std::cout << " Run DeviceStage" << stage_name_ <<std::endl;
+  return true;
 }
 
 bool DecoratorStage::RunStage(const ProcessContextMap &conext_map) {
   StagePreProcess(conext_map);
   RunSubStage(conext_map);
   StagePostProcess(conext_map);
+  return true;
 }
 
 bool DecoratorStage::AddProcess(const DeviceStagePtr &device_ptr) {
