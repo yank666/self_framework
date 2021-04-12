@@ -67,5 +67,7 @@ add_subdirectory(src/deviceengine)
 target_link_libraries(main parseconfig)
 target_link_libraries(pipeline device_utile)
 target_link_libraries(main pipeline)
-
+if (BUILD_TESTCASE)
+    add_subdirectory(tests)
+endif()
 

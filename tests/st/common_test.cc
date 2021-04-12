@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include <fstream>
 #include "glog/logging.h"
+#include "src/parse/parse_config.h"
+#include "src/pipeline/pipeline.h"
 
 class BenchMark : public testing::Test{
 public:
@@ -45,22 +47,17 @@ char* BenchMark::ReadFromFile(std::string file_name, size_t memlen) {
   LOG(INFO) << "Read file " << file_name << "success!";
   return buf;
 }
-TEST_F(BenchMark, Performance_test) {
-  float *input0 = reinterpret_cast<float *>(
-      ReadFromFile("D:\\workBase\\Goodlib\\software_constauct_base\\bin\\input1.bin",
-          1*3*252*9* sizeof(float)));
-  float *input1 = reinterpret_cast<float *>(
-      ReadFromFile("D:\\workBase\\Goodlib\\software_constauct_base\\bin\\input2.bin",
-      1*3*1008*9* sizeof(float)));
-  float *input2 = reinterpret_cast<float *>(
-      ReadFromFile("D:\\workBase\\Goodlib\\software_constauct_base\\bin\\input3.bin",
-      1*3*4032*9* sizeof(float)));
-  float* inputArray[] = {input0, input1, input2};
+TEST_F(BenchMark, St_test) {
+  FLAGS_minloglevel = 0;
+  std::string model_cfg_file = "./models.cfg";
+  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+  pipeline::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
 
-  
-  delete []input0;
-  delete []input1;
-  delete []input2;
+  pipeline::Pipeline ss;
+  char **input= nullptr;
+  ss.InitPipeline(cfg_vec, input);
+  ss.RunPipeline();
+  LOG(INFO) << "Run SUCCESS!";
 }
 TEST_F(BenchMark, Accuracy_test) {
 

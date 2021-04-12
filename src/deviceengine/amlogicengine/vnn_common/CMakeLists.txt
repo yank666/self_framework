@@ -6,8 +6,6 @@ include_directories("${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/ops")
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc")
 include_directories("${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc/CL")
 
-
-message("=================${PROJECT_SOURCE_DIR}/thirdparty/ddk/======================")
 file(GLOB_RECURSE AMLOGIC_COMMON_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.c"
         )
