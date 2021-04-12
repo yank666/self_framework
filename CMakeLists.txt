@@ -56,17 +56,11 @@ add_custom_target(generate_proto ALL
         VERBATIM
         )
 
-add_executable(main main.cpp)
-target_link_libraries(main glog::glog)
-
-#target_link_libraries(test_base64encode glog::glog ${OpenCV_LIBS} OpenMP::OpenMP_CXX)
 add_subdirectory(src/pipeline)
 add_subdirectory(src/parse)
 add_subdirectory(src/deviceengine)
 
-target_link_libraries(main parseconfig)
-target_link_libraries(pipeline device_utile)
-target_link_libraries(main pipeline)
+
 if (BUILD_TESTCASE)
     add_subdirectory(tests)
 endif()
