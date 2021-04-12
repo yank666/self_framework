@@ -8,8 +8,8 @@
 namespace device {
 class FcosEngineInfer : public AmlogicEngine {
 public:
-  FcosEngineInfer();
-  ~FcosEngineInfer();
+  FcosEngineInfer(ModelCfgPtr model_cfg_ptr) : AmlogicEngine( model_cfg_ptr) {};
+  ~FcosEngineInfer() = default;
   int CreateGraph();
   int RunProcess();
 };

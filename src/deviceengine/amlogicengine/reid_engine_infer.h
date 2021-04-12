@@ -8,8 +8,8 @@
 namespace device {
 class ReidEngineInfer : public AmlogicEngine {
 public:
-  ReidEngineInfer();
-  ~ReidEngineInfer();
+  ReidEngineInfer(ModelCfgPtr model_cfg_ptr) : AmlogicEngine( model_cfg_ptr) {};
+  ~ReidEngineInfer() = default;
   int CreateGraph();
   int RunProcess();
 };

@@ -14,6 +14,7 @@ extern "C"{
 
 
 #include "vsi_nn_pub.h"
+#include "vnn_global.h"
 
 #define VNN_APP_DEBUG (FALSE)
 #define VNN_VERSION_MAJOR 1

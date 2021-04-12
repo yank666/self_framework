@@ -16,7 +16,7 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
                                        pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
   if (-1 == fd) {
-    LOG(ERROR) << "Fail to open config file: " << cfg_file;
+    LOG(ERROR) << "Fail to open config file: " << cfg_file << ", please check file exist";
     return false;
   }
   std::unique_ptr<google_FileInputStream> input_stream(new google_FileInputStream(fd));

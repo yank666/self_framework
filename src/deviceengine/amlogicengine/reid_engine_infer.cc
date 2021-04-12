@@ -15,5 +15,5 @@ int ReidEngineInfer::CreateGraph() {
 int ReidEngineInfer::RunProcess() {
   return 0;
 }
-REG_DeviceEngine(reid, nb, std::make_shared<ReidEngineInfer>())
+REG_DeviceEngine(reid, nb, std::make_shared<ReidEngineInfer>(nullptr))
 }

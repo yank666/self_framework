@@ -15,5 +15,5 @@ int FcosEngineInfer::CreateGraph() {
 int FcosEngineInfer::RunProcess() {
   return 0;
 }
-REG_DeviceEngine(fcos, nb, std::make_shared<FcosEngineInfer>())
+REG_DeviceEngine(fcos, nb, std::make_shared<FcosEngineInfer>(nullptr))
 }

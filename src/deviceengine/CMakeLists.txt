@@ -11,7 +11,7 @@ elseif(${ENABLE_ENGINE_TYPE} MATCHES "TRT")
 endif()
 
 add_library(device_utile SHARED ${DEVICE_ENGINE_SRC_LIST})
-
+target_link_libraries(device_utile glog::glog)
 if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
     add_subdirectory(amlogicengine/vnn_common)
     target_link_libraries(device_utile amlogic_common)

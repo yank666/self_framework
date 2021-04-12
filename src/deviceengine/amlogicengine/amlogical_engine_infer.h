@@ -7,6 +7,8 @@
 
 #include <string>
 #include "../abstractengine.h"
+#include "vnn_common/vnn_model.h"
+
 namespace device {
 class AmlogicEngine : public AbstractEngine {
 public:
@@ -14,9 +16,10 @@ public:
    ~AmlogicEngine() = default;
   int CreateGraph();
   int RunProcess();
+  virtual vsi_nn_graph_t *InitModel(std::string binary_path) {return nullptr;}
 
 protected:
-  //  vsi_nn_graph_t *self_graph_ = NULL;
+  vsi_nn_graph_t *self_graph_ = NULL;
 };
 }
 #endif // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H

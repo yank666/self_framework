@@ -51,7 +51,6 @@ public:
 
 int main(int argc, char **argv) {
   FLAGS_minloglevel = 0;
-  std::ios_base::sync_with_stdio;
   google::InitGoogleLogging(argv[0]);
 
   std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules/models.cfg";
