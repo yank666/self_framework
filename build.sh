@@ -122,19 +122,18 @@ build_project()
 {
   mkdir -pv "${BUILD_PATH}/"
   cd "${BUILD_PATH}/"
-  BUILD_TYPE="Release"
+    BUILD_TYPE="Release"
   if [[ "${DEBUG_MODE}" == "on" ]]; then
     BUILD_TYPE="Debug"
   fi
   CMAKE_ARGS="-DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_PATH=$BUILD_PATH -DBUILD_TESTCASE=${RUN_TESTCASES}"
   CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_ENGINE_TYPE=$ENABLE_ENGINE_TYPE"
-#  CMAKE_ARGS="${CMAKE_ARGS} -DENABLE_DEVICE=$DEVICE"
-  if [[ "${DEVICE}" == "ANDROID" ]]; then
+  if [[ "${ENABLE_ENGINE_TYPE}" == "NB" ]]; then
     checkndk
     cmake -DCMAKE_TOOLCHAIN_FILE="${ANDROID_NDK}/build/cmake/android.toolchain.cmake" -DANDROID_NATIVE_API_LEVEL="28" \
     -DANDROID_NDK="${ANDROID_NDK}" -DANDROID_ABI="armeabi-v7a" -DANDROID_TOOLCHAIN_NAME="aarch64-linux-android-clang" \
     -DANDROID_STL=${ANDROID_STL} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}  -DENABLE_ENGINE_TYPE="$ENABLE_ENGINE_TYPE" \
-    -DENABLE_DEVICE=$DEVICE -DBUILD_TESTCASE=${RUN_TESTCASES} ..
+    -DBUILD_TESTCASE=${RUN_TESTCASES} ..
     make -j$THREAD_NUM && make package
   else
      echo "=================${CMAKE_ARGS}========================="
