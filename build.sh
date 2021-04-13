@@ -135,7 +135,7 @@ build_project()
     -DANDROID_NDK="${ANDROID_NDK}" -DANDROID_ABI="armeabi-v7a" -DANDROID_TOOLCHAIN_NAME="aarch64-linux-android-clang" \
     -DANDROID_STL=${ANDROID_STL} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}  -DENABLE_ENGINE_TYPE="$ENABLE_ENGINE_TYPE" \
     -DENABLE_DEVICE=$DEVICE -DBUILD_TESTCASE=${RUN_TESTCASES} ..
-    make -j$THREAD_NUM
+    make -j$THREAD_NUM && make package
   else
      echo "=================${CMAKE_ARGS}========================="
      cmake ${CMAKE_ARGS} ..
@@ -148,7 +148,7 @@ checkopts "$@"
 echo "---------------- build start ----------------"
  git submodule update --init
   if [[ "X$ENABLE_PROTOC" = "Xon" ]]; then
-    cd cmake/
+    cd cmake_dependency/
     mkdir -pv "build_dependency/"
     cd build_dependency
     cmake -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF -Dbase_path="${BASEPATH}" ..
