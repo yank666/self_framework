@@ -12,7 +12,7 @@ public:
   TRTEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr){}
   virtual ~TRTEngine() = default;
   virtual int CreateGraph();
-  virtual int RunProcess();
+  virtual int RunProcess(const contextPtr& cur_context_ptr);
 };
 }
 #endif // SELF_ARCHITECTURE_TRT_ENGINE_H

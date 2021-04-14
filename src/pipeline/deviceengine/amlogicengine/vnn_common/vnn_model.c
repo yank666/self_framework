@@ -65,3 +65,35 @@ void vnn_ReleaseModel
         }
     }
 } /* vnn_ReleaseModel() */
+
+static uint8_t* load_data
+    (
+        FILE  * fp,
+        size_t  ofst,
+        size_t  sz
+    )
+{
+  uint8_t* data;
+  int32_t ret;
+  data = NULL;
+  if( NULL == fp )
+  {
+    return NULL;
+  }
+
+  ret = fseek(fp, ofst, SEEK_SET);
+  if (ret != 0)
+  {
+    VSILOGE("blob seek failure.");
+    return NULL;
+  }
+
+  data = (uint8_t*)malloc(sz);
+  if (data == NULL)
+  {
+    VSILOGE("buffer malloc failure.");
+    return NULL;
+  }
+  ret = fread(data, 1, sz, fp);
+  return data;
+} /* load_data() */

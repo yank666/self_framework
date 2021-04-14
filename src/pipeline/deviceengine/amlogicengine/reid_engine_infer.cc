@@ -3,9 +3,9 @@
 //
 
 #include "reid_engine_infer.h"
+#include "src/pipeline/deviceengine/device_register.h"
 #include <memory>
 #include <string>
-#include "../device_register.h"
 namespace device {
 int ReidEngineInfer::CreateGraph() {
 

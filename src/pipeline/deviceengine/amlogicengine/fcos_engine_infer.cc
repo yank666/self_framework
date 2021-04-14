@@ -3,14 +3,14 @@
 //
 
 #include "fcos_engine_infer.h"
+#include "glog/logging.h"
+#include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_global.h"
+#include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_model.h"
+#include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_post_process.h"
+#include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_pre_process.h"
+#include "src/pipeline/deviceengine/device_register.h"
 #include <memory>
 #include <string>
-#include "glog/logging.h"
-#include "../device_register.h"
-#include "vnn_common/vnn_global.h"
-#include "vnn_common/vnn_pre_process.h"
-#include "vnn_common/vnn_model.h"
-#include "vnn_common/vnn_post_process.h"
 
 namespace device {
 //int FcosEngineInfer::CreateGraph() {

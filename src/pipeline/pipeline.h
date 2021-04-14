@@ -5,9 +5,9 @@
 #ifndef SELF_ARCHITECTURE_PIPELINE_H
 #define SELF_ARCHITECTURE_PIPELINE_H
 
-#include "../deviceengine/abstractengine.h"
-#include "../deviceengine/amlogicengine/amlogical_engine_infer.h"
-#include "../deviceengine/trtengine/trt_engine.h"
+#include "deviceengine/abstractengine.h"
+#include "deviceengine/amlogicengine/amlogical_engine_infer.h"
+#include "deviceengine/trtengine/trt_engine.h"
 #include "../parse/parse_config.h"
 #include "glog/logging.h"
 #include <memory>
@@ -16,29 +16,16 @@
 #include <vector>
 
 namespace pipeline {
+using device::contextPtr;
 class AbstractStage;
 using AbstractStagePtr = std::shared_ptr<AbstractStage>;
-class Context;
-using contextPtr = std::shared_ptr<Context>;
-using ProcessContextMap = std::unordered_map<std::string,
-                        std::pair<AbstractStagePtr, contextPtr>>;
+
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
+using ProcessContextMap = std::unordered_map<std::string, ProcessContext>;
 
 enum kEngineType : int {begintype = 0, trttype = 1, amlogicaltype = 2, endtype = 3};
 const std::unordered_map<std::string, kEngineType> kEngineTypeSwitch = {
     {"trt", trttype}, {"nb", amlogicaltype}
-};
-
-class Context {
-public:
-  Context() = default;
-  ~Context() = default;
-  
-  uint32_t channel_;
-  std::string name_;
-  std::vector<uint32_t> datasize_;
-  std::vector<std::vector<float>> dataflow_;
-  std::vector<std::vector<float>> dataflow_temp_;
 };
 
 class AbstractStage {
@@ -49,7 +36,7 @@ public:
     }
   };
   ~AbstractStage() = default;
-  virtual bool RunStage(const ProcessContextMap &conext_map) = 0;
+  virtual bool RunStage(const contextPtr &conext_ptr) = 0;
   bool CreateContextFromCfg();
   const std::string GetModelName(){return stage_name_;}
   ModelCfgPtr GetModelCfg() {return stage_cfg_;};
@@ -62,8 +49,8 @@ class DeviceStage : public AbstractStage {
 public:
   DeviceStage(const ModelCfgPtr& model_cfg);
   ~DeviceStage() = default;
-  bool FillStagebyEngine();
-  bool RunStage(const ProcessContextMap &conext_map);
+  bool FillStagebyEngine(const contextPtr &conext_ptr);
+  bool RunStage(const contextPtr &conext_ptr);
 private:
   std::shared_ptr<device::AbstractEngine> engine_;
 };
@@ -73,13 +60,13 @@ class DecoratorStage : public AbstractStage {
 public:
   DecoratorStage() : extra_stage_ptr_(nullptr), AbstractStage(nullptr){};
   ~DecoratorStage() = default;
-  bool RunStage(const ProcessContextMap &conext_map);
+  bool RunStage(const contextPtr &conext_ptr);
   bool AddProcess(const DeviceStagePtr &device_ptr);
 protected:
-  virtual bool StagePreProcess(const ProcessContextMap &conext_map) = 0;
-  virtual bool StagePostProcess(const ProcessContextMap &conext_map) = 0;
-  bool RunSubStage(const ProcessContextMap &conext_map) {
-                            return extra_stage_ptr_->RunStage(conext_map);}
+  virtual bool StagePreProcess(const contextPtr &conext_ptr) = 0;
+  virtual bool StagePostProcess(const contextPtr &conext_ptr) = 0;
+  bool RunSubStage(const contextPtr &conext_ptr) {
+                            return extra_stage_ptr_->RunStage(conext_ptr);}
   DeviceStagePtr extra_stage_ptr_;
 };
 using DecorStagePtr = std::shared_ptr<DecoratorStage>;
@@ -92,7 +79,7 @@ public:
                         char **input_data);
   void SetStage(const AbstractStagePtr &stage_ptr);
   const DeviceStagePtr GetStage(const uint32_t &poisiton);
-  const DeviceStagePtr FindStage(std::string stage_name);
+  const DeviceStagePtr FindStage(const std::string &stage_name);
   void RunPipeline();
   void RegisterStage(const ModelCfgPtr &model_cfg);
   bool SetDataFlowBuf(const std::vector<AbstractStagePtr> &cur_stage_vec);

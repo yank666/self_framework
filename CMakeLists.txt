@@ -28,7 +28,6 @@ include_directories(${GLOG_DIR}/src)
 add_subdirectory(${GLOG_DIR})
 
 #include_directories(${OpenCV_INCLUDE_DIRS})
-
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/utils)
@@ -38,9 +37,6 @@ include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc/CL)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-
-
 
 file(GLOB_RECURSE  proto_files ${CMAKE_CURRENT_SOURCE_DIR}/modules/*.proto)
 foreach(fil ${proto_files})
@@ -61,8 +57,6 @@ add_custom_target(generate_proto ALL
 
 add_subdirectory(src/pipeline)
 add_subdirectory(src/parse)
-add_subdirectory(src/deviceengine)
-
 
 if (BUILD_TESTCASE)
     add_subdirectory(tests)

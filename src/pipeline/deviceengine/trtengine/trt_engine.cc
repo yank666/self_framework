@@ -17,7 +17,7 @@ int TRTEngine::CreateGraph() {
   return 0;
 }
 
-int TRTEngine::RunProcess() {
+int TRTEngine::RunProcess(const contextPtr& cur_context_ptr) {
 
   return 0;
 }

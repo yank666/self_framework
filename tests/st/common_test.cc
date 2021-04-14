@@ -47,7 +47,7 @@ char* BenchMark::ReadFromFile(std::string file_name, size_t memlen) {
   LOG(INFO) << "Read file " << file_name << "success!";
   return buf;
 }
-TEST_F(BenchMark, St_test) {
+TEST_F(BenchMark, st) {
   FLAGS_minloglevel = 0;
   std::string model_cfg_file = "./models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;

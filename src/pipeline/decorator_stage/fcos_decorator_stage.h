@@ -5,11 +5,11 @@
 #ifndef SELF_ARCHITECTURE_FCOS_DEROCATE_STAGE_H
 #define SELF_ARCHITECTURE_FCOS_DEROCATE_STAGE_H
 
-#include "pipeline.h"
+#include "src/pipeline/pipeline.h"
 namespace pipeline {
 class FcosDerocatestage : public DecoratorStage {
-  bool StagePreProcess(const ProcessContextMap &conext_map);
-  bool StagePostProcess(const ProcessContextMap &conext_map);
+  bool StagePreProcess(const contextPtr &conext_ptr);
+  bool StagePostProcess(const contextPtr &conext_ptr);
 };
 }
 
