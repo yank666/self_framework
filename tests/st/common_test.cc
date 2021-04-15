@@ -52,10 +52,11 @@ TEST_F(BenchMark, st) {
   std::string model_cfg_file = "./models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   pipeline::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
-
+  char *in = ReadFromFile("./input.bin", 1*3*384*672*sizeof(float));
   pipeline::Pipeline ss;
-  char **input= nullptr;
+  char *input[1] = {in};
   ss.InitPipeline(cfg_vec, input);
+  LOG(INFO) << "InitPipeline SUCCESS";
   ss.RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }

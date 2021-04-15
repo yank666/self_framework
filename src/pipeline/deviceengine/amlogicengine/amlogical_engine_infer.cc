@@ -24,15 +24,19 @@ int AmlogicEngine::CreateGraph(const contextPtr& cur_context_ptr) {
     LOG(ERROR) << "Create graph according binary path fail, due to binary path is invalid.";
     return -1;
   }
+  LOG(ERROR) << "Enter amlogical Create graph";
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
   self_graph_ = InitModel(binary_path);
+  LOG(ERROR) << "After amlogical Create graph";
   vsi_status status = vnn_VerifyGraph(self_graph_);
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "vnn_VerifyGraph failed";
     return -1;
   }
-  for(uint32_t idx = 0; idx < self_graph_->output.num; ++idx) {
+  uint32_t out_num_graph = self_graph_->output.num;
+  cur_context_ptr->out_dataflow_.resize(out_num_graph);
+  for(uint32_t idx = 0; idx < out_num_graph; ++idx) {
     vsi_nn_tensor_t *out_tensor = ::vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[idx]);
     uint32_t element_sum = vsi_nn_GetElementNum(out_tensor);
     cur_context_ptr->out_dataflow_[idx].resize(element_sum);
