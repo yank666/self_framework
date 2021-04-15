@@ -16,12 +16,9 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
   REPORT_EXCEPTION_IF_NULL(stage_context);
 
   CreateContexts(stage_context, model_cfg);
-  LOG(INFO) << "After CreateContexts";
   model_inference_ptr->FillStagebyEngine(stage_context);
-  LOG(INFO) << "After FillStagebyEngine";
   DecorStagePtr exec_stage_ptr =
       DeviceInferenceFactory::GetInstance().GetDeviceInference(model_inference_ptr->GetModelName());
-  LOG(INFO) << "After GetDeviceInference";
   if (exec_stage_ptr != nullptr) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
     stages_[model_cfg->model_position_].push_back(exec_stage_ptr);
@@ -69,7 +66,6 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
   for (const auto & model_cfg : model_cfgs) {
     RegisterStage(model_cfg);
   }
-  LOG(ERROR) << "After Register stage";
   for (size_t i = 0; i < stages_[0].size(); ++i) {
     std::string stage_name= stages_[0][i]->GetModelName();
     auto stage_context_ptr  = GetStageContextbyName(stage_name);
@@ -115,7 +111,6 @@ bool DeviceStage::FillStagebyEngine(const contextPtr &conext_ptr) {
     LOG(ERROR) << "DeviceStage obtain engine is nullptr";
     return false;
   }
-  LOG(INFO) << "Enter FillStagebyEngine";
   REPORT_ERROR_IF_NULL(conext_ptr);
   engine_->CreateGraph(conext_ptr);
   return true;

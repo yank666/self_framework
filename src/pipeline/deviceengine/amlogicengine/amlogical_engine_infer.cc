@@ -24,11 +24,9 @@ int AmlogicEngine::CreateGraph(const contextPtr& cur_context_ptr) {
     LOG(ERROR) << "Create graph according binary path fail, due to binary path is invalid.";
     return -1;
   }
-  LOG(ERROR) << "Enter amlogical Create graph";
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
   self_graph_ = InitModel(binary_path);
-  LOG(ERROR) << "After amlogical Create graph";
   vsi_status status = vnn_VerifyGraph(self_graph_);
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "vnn_VerifyGraph failed";

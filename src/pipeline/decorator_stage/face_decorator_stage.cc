@@ -15,5 +15,5 @@ bool FaceDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   return true;
   
 }
-REG_Stage(face, std::make_shared<FaceDerocatestage>());
+REG_Stage(face, std::make_shared<FaceDerocatestage>())
 }

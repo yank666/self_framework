@@ -56,7 +56,6 @@ TEST_F(BenchMark, st) {
   pipeline::Pipeline ss;
   char *input[1] = {in};
   ss.InitPipeline(cfg_vec, input);
-  LOG(INFO) << "InitPipeline SUCCESS";
   ss.RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }

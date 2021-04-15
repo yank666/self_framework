@@ -18,5 +18,5 @@ bool FcosDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   return true;
 
 }
-REG_Stage(fcos, std::make_shared<FcosDerocatestage>());
+REG_Stage(fcos, std::make_shared<FcosDerocatestage>())
 }

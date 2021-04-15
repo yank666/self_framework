@@ -46,12 +46,13 @@ protected:
 };
 
 class DeviceStage : public AbstractStage {
-public:
+ public:
   DeviceStage(const ModelCfgPtr& model_cfg);
   ~DeviceStage() = default;
-  bool FillStagebyEngine(const contextPtr &conext_ptr);
   bool RunStage(const contextPtr &conext_ptr);
-private:
+  bool FillStagebyEngine(const contextPtr &conext_ptr);
+
+ private:
   std::shared_ptr<device::AbstractEngine> engine_;
 };
 using DeviceStagePtr = std::shared_ptr<DeviceStage>;
