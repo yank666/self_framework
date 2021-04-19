@@ -6,11 +6,11 @@
 #include "glog/logging.h"
 #include "../device_register.h"
 namespace device {
-int TRTReidEngine::CreateGraph() {
+int TRTReidEngine::CreateGraph(const contextPtr &cur_context_ptr) {
   LOG(ERROR) << "CREATE TRT GRAPH";
   return 0;
 };
-int TRTReidEngine::RunProcess() {
+int TRTReidEngine::RunProcess(const contextPtr &cur_context_ptr) {
   LOG(ERROR) << "RUN TRT GRAPH";
   return 0;
 };

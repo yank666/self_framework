@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include "glog/logging.h"
 #include "src/utils/base.h"
 #include "src/pipeline/stage_register.h"

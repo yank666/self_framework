@@ -6,7 +6,6 @@
 #define SELF_ARCHITECTURE_PIPELINE_H
 
 #include "deviceengine/abstractengine.h"
-#include "deviceengine/amlogicengine/amlogical_engine_infer.h"
 #include "deviceengine/trtengine/trt_engine.h"
 #include "../parse/parse_config.h"
 #include "glog/logging.h"

@@ -15,8 +15,8 @@ class TRTReidEngine : public TRTEngine {
  public:
   TRTReidEngine(ModelCfgPtr model_cfg_ptr) : TRTEngine(model_cfg_ptr){};
   ~TRTReidEngine() = default;
-  int CreateGraph();
-  int RunProcess();
+  int CreateGraph(const contextPtr &cur_context_ptr);
+  int RunProcess(const contextPtr &cur_context_ptr);
   void SetModelCfg(ModelCfgPtr model_cfg_ptr) { model_cfg_ = model_cfg_ptr; }
 };
 }  // namespace device
