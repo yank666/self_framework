@@ -12,13 +12,7 @@
 //#include "vnn_common/vnn_model.h"
 
 namespace device {
-int TRTEngine::CreateGraph() {
+int TRTEngine::CreateGraph() { return 0; }
 
-  return 0;
-}
-
-int TRTEngine::RunProcess(const contextPtr& cur_context_ptr) {
-
-  return 0;
-}
-}
+int TRTEngine::RunProcess(const contextPtr &cur_context_ptr) { return 0; }
+}  // namespace device

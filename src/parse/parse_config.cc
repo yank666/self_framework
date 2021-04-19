@@ -11,29 +11,33 @@
 #include "glog/logging.h"
 
 using google_FileInputStream = google::protobuf::io::FileInputStream;
-namespace pipeline{
+namespace pipeline {
 bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
                                        pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
   if (-1 == fd) {
-    LOG(ERROR) << "Fail to open config file: " << cfg_file << ", please check file exist";
+    LOG(ERROR) << "Fail to open config file: " << cfg_file
+               << ", please check file exist";
     return false;
   }
-  std::unique_ptr<google_FileInputStream> input_stream(new google_FileInputStream(fd));
+  std::unique_ptr<google_FileInputStream> input_stream(
+    new google_FileInputStream(fd));
   ParserModel::ModelParameter proto_params;
-  bool success = google::protobuf::TextFormat::Parse(input_stream.get(), &proto_params);
+  bool success =
+    google::protobuf::TextFormat::Parse(input_stream.get(), &proto_params);
   if (!success) {
     LOG(ERROR) << "Fail to parse config file";
     return false;
   }
   close(fd);
 
-  for(int i = 0; i < proto_params.infer_config_size(); ++i) {
+  for (int i = 0; i < proto_params.infer_config_size(); ++i) {
     pipeline::ModelCfgPtr model_ptr = std::make_shared<pipeline::ModelConfig>();
-    ParserModel::InferConfigParameter model_param = proto_params.infer_config(i);
+    ParserModel::InferConfigParameter model_param =
+      proto_params.infer_config(i);
     model_ptr->model_name_ = model_param.name();
     model_ptr->model_binary_ = model_param.model_binary();
-    model_ptr->model_position_= model_param.model_position();
+    model_ptr->model_position_ = model_param.model_position();
     model_ptr->model_type_ = model_param.infer_type();
     for (int i = 0; i < model_param.input_shape_size(); ++i) {
       ParserModel::BlobShape shape = model_param.input_shape(i);
@@ -71,4 +75,4 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
   LOG(INFO) << "Parse config file Success";
   return true;
 }
-};
+};  // namespace pipeline

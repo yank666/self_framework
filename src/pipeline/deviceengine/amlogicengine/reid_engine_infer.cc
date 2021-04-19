@@ -7,13 +7,8 @@
 #include <memory>
 #include <string>
 namespace device {
-int ReidEngineInfer::CreateGraph() {
+int ReidEngineInfer::CreateGraph() { return 0; }
 
-  return 0;
-}
-
-int ReidEngineInfer::RunProcess() {
-  return 0;
-}
+int ReidEngineInfer::RunProcess() { return 0; }
 REG_DeviceEngine(reid, nb, std::make_shared<ReidEngineInfer>(nullptr))
-}
+}  // namespace device

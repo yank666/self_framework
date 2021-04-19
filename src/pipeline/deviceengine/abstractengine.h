@@ -10,7 +10,7 @@ namespace device {
 using ModelCfgPtr = pipeline::ModelCfgPtr;
 
 class Context {
-public:
+ public:
   Context() = default;
   ~Context() = default;
 
@@ -24,15 +24,15 @@ public:
 using contextPtr = std::shared_ptr<Context>;
 
 class AbstractEngine {
-public:
-  AbstractEngine(ModelCfgPtr model_cfg_ptr)
-      : model_cfg_(model_cfg_ptr){};
+ public:
+  AbstractEngine(ModelCfgPtr model_cfg_ptr) : model_cfg_(model_cfg_ptr){};
   virtual ~AbstractEngine() = default;
-  virtual int CreateGraph(const contextPtr& cur_context_ptr) = 0;
-  virtual int RunProcess(const contextPtr& cur_context_ptr) = 0;
+  virtual int CreateGraph(const contextPtr &cur_context_ptr) = 0;
+  virtual int RunProcess(const contextPtr &cur_context_ptr) = 0;
   bool SetModelCfg(ModelCfgPtr model_cfg_ptr);
-protected:
+
+ protected:
   pipeline::ModelCfgPtr model_cfg_;
 };
-}
-#endif // SELF_ARCHITECTURE_ABSTRACTENGINE_H
+}  // namespace device
+#endif  // SELF_ARCHITECTURE_ABSTRACTENGINE_H

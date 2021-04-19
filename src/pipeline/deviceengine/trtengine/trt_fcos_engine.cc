@@ -15,4 +15,4 @@ int TRTFcosEngine::RunProcess() {
   return 0;
 };
 REG_DeviceEngine(fcos, trt, std::make_shared<TRTFcosEngine>(nullptr))
-}
+}  // namespace device

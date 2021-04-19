@@ -13,19 +13,20 @@
 #include <string>
 
 namespace device {
-//int FcosEngineInfer::CreateGraph() {
+// int FcosEngineInfer::CreateGraph() {
 //
 //  return 0;
 //}
 //
-//int FcosEngineInfer::RunProcess() {
+// int FcosEngineInfer::RunProcess() {
 //  return 0;
 //}
 vsi_nn_graph_t *FcosEngineInfer::InitModel(std::string binary_path) {
-  return vnn_CreateEdge256PedReid(reinterpret_cast<const char *>(binary_path.data()), NULL,
-                                   vnn_GetPrePorcessMap(), vnn_GetPrePorcessMapCount(),
-                                   vnn_GetPostPorcessMap(), vnn_GetPostPorcessMapCount());
+  return vnn_CreateEdge256PedReid(
+    reinterpret_cast<const char *>(binary_path.data()), NULL,
+    vnn_GetPrePorcessMap(), vnn_GetPrePorcessMapCount(),
+    vnn_GetPostPorcessMap(), vnn_GetPostPorcessMapCount());
 }
 
 REG_DeviceEngine(fcos, nb, std::make_shared<FcosEngineInfer>(nullptr))
-}
+}  // namespace device

@@ -8,11 +8,11 @@
 #include "../abstractengine.h"
 namespace device {
 class TRTEngine : public AbstractEngine {
-public:
-  TRTEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr){}
+ public:
+  TRTEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr) {}
   virtual ~TRTEngine() = default;
   virtual int CreateGraph();
-  virtual int RunProcess(const contextPtr& cur_context_ptr);
+  virtual int RunProcess(const contextPtr &cur_context_ptr);
 };
-}
-#endif // SELF_ARCHITECTURE_TRT_ENGINE_H
+}  // namespace device
+#endif  // SELF_ARCHITECTURE_TRT_ENGINE_H

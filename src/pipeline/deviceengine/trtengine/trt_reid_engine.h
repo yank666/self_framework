@@ -12,12 +12,12 @@
 
 namespace device {
 class TRTReidEngine : public TRTEngine {
-public:
+ public:
   TRTReidEngine(ModelCfgPtr model_cfg_ptr) : TRTEngine(model_cfg_ptr){};
   ~TRTReidEngine() = default;
   int CreateGraph();
   int RunProcess();
-  void SetModelCfg(ModelCfgPtr model_cfg_ptr) {model_cfg_ = model_cfg_ptr;}
+  void SetModelCfg(ModelCfgPtr model_cfg_ptr) { model_cfg_ = model_cfg_ptr; }
 };
-}
-#endif // SELF_ARCHITECTURE_TRT_REID_ENGINE_H
+}  // namespace device
+#endif  // SELF_ARCHITECTURE_TRT_REID_ENGINE_H

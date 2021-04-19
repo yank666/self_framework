@@ -11,16 +11,17 @@
 
 namespace device {
 class AmlogicEngine : public AbstractEngine {
-public:
-  AmlogicEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr){}
-   ~AmlogicEngine();
-  int CreateGraph(const contextPtr& cur_context_ptr);
-  int RunProcess(const contextPtr& cur_context_ptr);
-  virtual vsi_nn_graph_t *InitModel(std::string binary_path) {return nullptr;}
-  int PreProcess(const contextPtr& cur_context_ptr);
-  int PostProcess(const contextPtr& cur_context_ptr);
-protected:
+ public:
+  AmlogicEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr) {}
+  ~AmlogicEngine();
+  int CreateGraph(const contextPtr &cur_context_ptr);
+  int RunProcess(const contextPtr &cur_context_ptr);
+  virtual vsi_nn_graph_t *InitModel(std::string binary_path) { return nullptr; }
+  int PreProcess(const contextPtr &cur_context_ptr);
+  int PostProcess(const contextPtr &cur_context_ptr);
+
+ protected:
   vsi_nn_graph_t *self_graph_ = NULL;
 };
-}
-#endif // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H
+}  // namespace device
+#endif  // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H

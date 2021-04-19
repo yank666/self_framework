@@ -16,7 +16,6 @@ bool FcosDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
 bool FcosDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   std::cout << " Run Fcos Derocatestage post" << std::endl;
   return true;
-
 }
 REG_Stage(fcos, std::make_shared<FcosDerocatestage>())
-}
+}  // namespace pipeline

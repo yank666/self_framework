@@ -24,11 +24,11 @@ using ModelCfgPtr = std::shared_ptr<ModelConfig>;
 using ModelCfgList = std::vector<std::shared_ptr<ModelConfig>>;
 
 class ParseConfig {
-public:
+ public:
   ParseConfig() = default;
   ~ParseConfig() = default;
   static bool ParseConfigFromProto(const std::string &cfg_file,
                                    pipeline::ModelCfgList *model_list);
 };
-}
-#endif // SELF_ARCHITECTURE_PARSECONFIG_H
+}  // namespace pipeline
+#endif  // SELF_ARCHITECTURE_PARSECONFIG_H

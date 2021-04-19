@@ -15,4 +15,4 @@ int TRTReidEngine::RunProcess() {
   return 0;
 };
 REG_DeviceEngine(reid, trt, std::make_shared<TRTReidEngine>(nullptr))
-}
+}  // namespace device

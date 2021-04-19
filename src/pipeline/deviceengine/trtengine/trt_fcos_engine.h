@@ -12,12 +12,12 @@
 
 namespace device {
 class TRTFcosEngine : public TRTEngine {
-public:
+ public:
   TRTFcosEngine(ModelCfgPtr model_cfg_ptr) : TRTEngine(model_cfg_ptr){};
   ~TRTFcosEngine() = default;
   int CreateGraph();
   int RunProcess();
-  void SetModelCfg(ModelCfgPtr model_cfg_ptr) {model_cfg_ = model_cfg_ptr;}
+  void SetModelCfg(ModelCfgPtr model_cfg_ptr) { model_cfg_ = model_cfg_ptr; }
 };
-}
-#endif // SELF_ARCHITECTURE_TRT_FCOS_ENGINE_H
+}  // namespace device
+#endif  // SELF_ARCHITECTURE_TRT_FCOS_ENGINE_H

@@ -11,7 +11,6 @@ class FaceDerocatestage : public DecoratorStage {
   bool StagePreProcess(const contextPtr &conext_ptr);
   bool StagePostProcess(const contextPtr &conext_ptr);
 };
-}
+}  // namespace pipeline
 
-
-#endif //SELF_ARCHITECTURE_FACE_DECORATOR_STAGE_H
+#endif  // SELF_ARCHITECTURE_FACE_DECORATOR_STAGE_H

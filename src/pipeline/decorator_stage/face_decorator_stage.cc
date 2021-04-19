@@ -13,7 +13,6 @@ bool FaceDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
 bool FaceDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   std::cout << " Run FaceDerocatestage post" << std::endl;
   return true;
-  
 }
 REG_Stage(face, std::make_shared<FaceDerocatestage>())
-}
+}  // namespace pipeline
