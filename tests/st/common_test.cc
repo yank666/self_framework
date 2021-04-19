@@ -7,6 +7,8 @@
 #include "src/parse/parse_config.h"
 #include "src/pipeline/pipeline.h"
 
+using namespace pipeline;
+
 class BenchMark : public testing::Test {
  public:
   BenchMark() = default;
@@ -48,17 +50,24 @@ char *BenchMark::ReadFromFile(std::string file_name, size_t memlen) {
   LOG(INFO) << "Read file " << file_name << "success!";
   return buf;
 }
+
+
+
 TEST_F(BenchMark, st) {
   FLAGS_minloglevel = 0;
   std::string model_cfg_file = "./models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
-  pipeline::ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  ASSERT_EQ(0, ret);
   char *in = ReadFromFile("./input.bin", 1 * 3 * 384 * 672 * sizeof(float));
+  ASSERT_NE(nullptr, in);
+
   pipeline::Pipeline ss;
-  char *input[1] = {in};
-  ss.InitPipeline(cfg_vec, input);
+  ss.InitPipeline(cfg_vec, &in);
   ss.RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }
 
-TEST_F(BenchMark, Accuracy_test) {}
+TEST_F(BenchMark, time) {
+
+}

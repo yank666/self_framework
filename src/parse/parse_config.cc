@@ -4,21 +4,21 @@
 #include <fstream>
 #include <fcntl.h>
 #include <string>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/text_format.h>
-#include "modules/proto/parser.pb.h"
 #include "glog/logging.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
+#include "modules/proto/parser.pb.h"
+#include "src/utils/errorcode.h"
 
 using google_FileInputStream = google::protobuf::io::FileInputStream;
 namespace pipeline {
-bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
+int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
                                        pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
   if (-1 == fd) {
     LOG(ERROR) << "Fail to open config file: " << cfg_file
                << ", please check file exist";
-    return false;
+    return RET_INPUT_FILE_INVALID;
   }
   std::unique_ptr<google_FileInputStream> input_stream(
     new google_FileInputStream(fd));
@@ -27,7 +27,7 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     google::protobuf::TextFormat::Parse(input_stream.get(), &proto_params);
   if (!success) {
     LOG(ERROR) << "Fail to parse config file";
-    return false;
+    return RET_INPUT_FILE_INVALID;
   }
   close(fd);
 
@@ -35,10 +35,12 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     pipeline::ModelCfgPtr model_ptr = std::make_shared<pipeline::ModelConfig>();
     ParserModel::InferConfigParameter model_param =
       proto_params.infer_config(i);
+
     model_ptr->model_name_ = model_param.name();
     model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_position_ = model_param.model_position();
     model_ptr->model_type_ = model_param.infer_type();
+
     for (int i = 0; i < model_param.input_shape_size(); ++i) {
       ParserModel::BlobShape shape = model_param.input_shape(i);
       std::vector<uint32_t> inputs;
@@ -72,7 +74,7 @@ bool ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     }
     model_list->emplace_back(model_ptr);
   }
-  LOG(INFO) << "Parse config file Success";
-  return true;
+  DLOG(INFO) << "Parse config file Success";
+  return RET_OK;
 }
 };  // namespace pipeline

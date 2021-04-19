@@ -13,6 +13,7 @@ struct YoloV5Box {
   float y1;
   float x2;
   float y2;
+  float conf;
 };
 
 struct YoloV5BodyInfo {
@@ -22,6 +23,17 @@ struct YoloV5BodyInfo {
   YoloV5Box related_box;
   float related_score;
   std::vector<std::pair<int, float>> attrs;  // 属性label: 属性score
+};
+
+struct PersonInfo{
+  int32_t label;
+  YoloV5Box body;
+  YoloV5Box head;
+  YoloV5Box face;
+
+  std::vector<YoloV5Box> hand_packages;
+  std::vector<std::pair<int, float>> attrs;
+  std::vector<float> feature;
 };
 
 class YoloDerocatestage : public DecoratorStage {

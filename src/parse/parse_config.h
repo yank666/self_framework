@@ -27,7 +27,7 @@ class ParseConfig {
  public:
   ParseConfig() = default;
   ~ParseConfig() = default;
-  static bool ParseConfigFromProto(const std::string &cfg_file,
+  static int ParseConfigFromProto(const std::string &cfg_file,
                                    pipeline::ModelCfgList *model_list);
 };
 }  // namespace pipeline
