@@ -6,6 +6,7 @@
 #define SELF_ARCHITECTURE_YOLO_DECORATOR_STAGE_H
 
 #include "src/pipeline/pipeline.h"
+#include "Eigen/Dense"
 
 namespace pipeline {
 struct YoloV5Box {
@@ -53,6 +54,10 @@ class YoloDerocatestage : public DecoratorStage {
     std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec);
   void NMSProcess(const std::vector<YoloV5BodyInfo> &vec_boxes,
                   std::vector<YoloV5BodyInfo> *bboxes_nms);
+  std::shared_ptr<std::vector<PersonInfo>> ComputeAssociate(std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes);
+  bool FindAssociationPairs(Eigen::MatrixXf &cost_matrix, float matching_gate,
+    std::unordered_map<size_t, size_t> &matched_pairs, std::vector<size_t> &orphan_row_items,
+    std::vector<size_t> &orphan_col_items);
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_{nullptr};
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_np_{nullptr};
 };

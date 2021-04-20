@@ -27,6 +27,11 @@ set(GLOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog)
 include_directories(${GLOG_DIR}/src)
 add_subdirectory(${GLOG_DIR})
 
+
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/eigen)
+MESSAGE("++++++++++++++++++++++++${Eigen_SOURCE_DIR}+++++++++++++++")
+
+
 #include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include)

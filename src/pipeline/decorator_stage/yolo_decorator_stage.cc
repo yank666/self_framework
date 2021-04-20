@@ -7,6 +7,8 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
+#include <cfloat>
 #include "glog/logging.h"
 #include "src/utils/base.h"
 #include "src/pipeline/stage_register.h"
@@ -69,6 +71,22 @@ enum ClassifyLabel : int {
 };
 
 inline float sigmoid(float x) { return (1 / (1 + exp(-x))); }
+
+inline float bbox_iou(const YoloV5Box& box1, const YoloV5Box& box2) {
+  float xx1 = std::max<float>(box1.x1, box2.x1);
+  float yy1 = std::max<float>(box1.y1, box2.y1);
+  float xx2 = std::min<float>(box1.x2, box2.x2);
+  float yy2 = std::min<float>(box1.y2, box2.y2);
+  float w = std::max<float>(0, xx2 - xx1);
+  float h = std::max<float>(0, yy2 - yy1);
+  float area = w * h;
+  float combine_area = (box1.x2 - box1.x1) * (box1.y2 - box1.y2) + (box2.x2 - box2.x1) * (box2.y2 - box2.y2);
+  if (std::fabs(combine_area - area) <= FLT_EPSILON) {
+    return 0;
+  }
+  float iou = area / (combine_area - area);
+  return iou;
+}
 
 void softmax(float *x, int n) {
   float sum = 0.0;
@@ -375,6 +393,215 @@ void YoloDerocatestage::NMSProcess(const std::vector<YoloV5BodyInfo> &vec_boxes,
   }
 }
 
+std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes) {
+  std::shared_ptr<std::vector<PersonInfo>> associated_detections = std::make_shared<std::vector<PersonInfo>>();
+
+  size_t num_body = nms_boxes->at(0).size();
+  size_t num_head = nms_boxes->at(1).size();
+  size_t num_face = nms_boxes->at(2).size();
+  size_t num_package = nms_boxes->at(3).size();
+  Eigen::MatrixXf Cost_body2head = Eigen::MatrixXf::Zero(num_body, num_head);
+  for (size_t i = 0; i < num_body; ++i){
+    for (size_t j = 0; j < num_head; ++j) {
+      float iou = bbox_iou(nms_boxes->at(0)[i].related_box, nms_boxes->at(1)[j].related_box);
+      // float cost_pos = bbox_dist(body_detections[i]->GetAssociatedBox(), head_detections[j]->GetAssociatedBox());
+      Cost_body2head(i, j) = 1 - iou;
+    }
+  }
+  std::unordered_map<size_t, size_t> matched_pairs;
+  std::vector<size_t> unmatched_rows, unmatched_cols;
+  FindAssociationPairs(Cost_body2head, 0.8, matched_pairs, unmatched_rows,
+                       unmatched_cols);
+
+  for (const auto &iter : matched_pairs)
+  {
+    auto body_i = iter.first;
+    auto head_j = iter.second;
+
+    PersonInfo person_info;
+    person_info.label = 0;
+    person_info.attrs = nms_boxes->at(0)[body_i].attrs;
+    person_info.body.conf = nms_boxes->at(0)[body_i].score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
+    // person_info.attr = body_detections[body_i]->attr;
+
+    person_info.body = nms_boxes->at(0)[body_i].box;
+    person_info.head = nms_boxes->at(1)[head_j].box;
+
+    person_info.body = nms_boxes->at(0)[body_i].box;
+    person_info.head = nms_boxes->at(1)[head_j].related_box;
+
+    // person_info.feature = (nms_boxes->at(0)[body_i]->get_appearance_feature());
+    associated_detections->push_back(person_info);
+  }
+
+  // body匹配不成功，保留body还是直接删掉??
+  for (const auto body_i : unmatched_rows)
+  {
+    PersonInfo person_info;
+    person_info.label = 0;
+    person_info.attrs = nms_boxes->at(0)[body_i].attrs;
+    person_info.body.conf = nms_boxes->at(0)[body_i].score;
+    person_info.head.conf = nms_boxes->at(0)[body_i].related_score;
+    //    person_info.attr = body_detections[body_i]->attr;
+
+    person_info.body = nms_boxes->at(0)[body_i].box;
+
+    person_info.body = nms_boxes->at(0)[body_i].box;
+    person_info.head = nms_boxes->at(0)[body_i].related_box;
+
+    // 防止head_width=0 || head_height=0
+    if( (person_info.head.x2 - person_info.head.x1) < 2 || (person_info.head.y2 - person_info.head.y1) < 2)
+    {
+      person_info.head.x1 = person_info.body.x1;
+      person_info.head.y1 = person_info.body.y1;
+      person_info.head.x2 = person_info.body.x2;
+      person_info.head.y2 = person_info.body.y2 / 3;
+    }
+
+    // person_info.set_appearance_feature(body_detections[body_i]->get_appearance_feature());
+
+    associated_detections->push_back(person_info);
+  }
+
+  // head匹配不成功，保留
+  for (const auto head_j : unmatched_cols)
+  {
+    PersonInfo person_info;
+    person_info.label = 0;
+    person_info.attrs = nms_boxes->at(1)[head_j].attrs;
+    person_info.body.conf = nms_boxes->at(1)[head_j].score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
+
+    person_info.body = nms_boxes->at(1)[head_j].box;
+
+    person_info.body = nms_boxes->at(1)[head_j].box;
+    person_info.head = nms_boxes->at(1)[head_j].related_box;
+
+    associated_detections->push_back(person_info);
+  }
+
+  int num_person = associated_detections->size();
+
+  // 2.0 face 与 head 关联
+  Eigen::MatrixXf Cost_face2head = Eigen::MatrixXf::Zero(num_face, num_person);
+  for (size_t i = 0; i < num_face; ++i)
+  {
+    for (size_t j = 0; j < num_person; ++j)
+    {
+      float iou = bbox_iou(nms_boxes->at(1)[i].box, nms_boxes->at(1)[j].related_box);
+      Cost_face2head(i, j) = 1 - iou;
+    }
+  }
+
+  FindAssociationPairs(Cost_face2head, 0.8, matched_pairs, unmatched_rows,
+                       unmatched_cols);
+
+  // # 只处理匹配成功的face
+//  for (const auto &iter : matched_pairs)
+//  {
+//    auto face_i = iter.first;
+//    auto person_j = iter.second;
+//
+//    associated_detections[person_j].face = std::make_shared<FaceDetection>(face_detections[face_i]);
+//    associated_detections[person_j].face_is_observed = true;
+//    associated_detections[person_j].face_bounding_box = face_detections[face_i].GetBox();
+//  }
+//
+//  // 3.0 handpackage 与 body 关联. 利用中心点距离进行关联
+//  // 一个person可能对应多个handpackage
+//  Eigen::MatrixXf Cost_package2body = Eigen::MatrixXf::Zero(num_package, num_person);
+//  for (size_t i = 0; i < num_package; ++i)
+//  {
+//    float min_dist = 10.0;
+//    size_t match_j = 0;
+//    for (size_t j = 0; j < num_person; ++j)
+//    {
+//      cv::Point2d package_associated_points = handpackage_detections[i].GetAssociatedCentroid();
+//      cv::Point2d body_points = associated_detections[j].GetBodyCentroid();
+//      float body_diag = associated_detections[j].GetBodyDiag();
+//
+//      cv::Point2d diff = body_points - package_associated_points;
+//      float dist = sqrtf(diff.x * diff.x + diff.y * diff.y) / body_diag;
+//
+//      if (dist < min_dist)
+//      {
+//        min_dist = dist;
+//        match_j = j;
+//      }
+//    }
+//
+//    if (min_dist < 0.5)
+//    {
+//      associated_detections[match_j].package = std::make_shared<HandpackageDetection>(handpackage_detections[i]);
+//      associated_detections[match_j].package_is_observed = true;
+//      associated_detections[match_j].handpackage_bounding_boxes.push_back(handpackage_detections[i].GetBox());
+//    }
+//  }
+//
+//  // 4.0 计算body_quality
+//  for (int i = 0; i < associated_detections.size(); i++)
+//  {
+//    std::vector<float> attr = associated_detections->at(i).attrs;
+//    int orientation = int(attr[0]);
+//    float visibile = attr[3];
+//    float occlusion = attr[5];
+//    float resoluton = attr[7];
+//
+//    float quality = 1.0f - (visibile * 0.4 + occlusion * 0.4 + resoluton * 0.1);
+//    associated_detections[i].quality = quality;
+//  }
+
+  return associated_detections;
+}
+
+bool YoloDerocatestage::FindAssociationPairs(Eigen::MatrixXf &cost_matrix, float matching_gate,
+                          std::unordered_map<size_t, size_t> &matched_pairs, std::vector<size_t> &orphan_row_items,
+                          std::vector<size_t> &orphan_col_items) {
+  matched_pairs.clear();
+  orphan_row_items.clear();
+  orphan_col_items.clear();
+
+  if (cost_matrix.size() == 0)
+  {
+    return false;
+  }
+  int min_row, min_col;
+  std::vector<size_t> matched_row_indices, matched_col_indices;
+  Eigen::VectorXf col_vec = Eigen::MatrixXf::Constant(cost_matrix.rows(), 1, std::numeric_limits<float>::max());
+  Eigen::RowVectorXf row_vec = Eigen::MatrixXf::Constant(1, cost_matrix.cols(), std::numeric_limits<float>::max());
+
+  while (cost_matrix.minCoeff(&min_row, &min_col) <= matching_gate)
+  {
+    if (min_row >= cost_matrix.rows() || min_col >= cost_matrix.cols())
+    {
+      break;
+    }
+    matched_pairs[min_row] = min_col;
+
+    cost_matrix.row(min_row) = row_vec;
+    cost_matrix.col(min_col) = col_vec;
+    matched_row_indices.push_back(min_row);
+    matched_col_indices.push_back(min_col);
+  }
+
+  std::vector<size_t> all_row_indices(cost_matrix.rows());
+  std::iota(std::begin(all_row_indices), std::end(all_row_indices), 0);
+
+  std::vector<size_t> all_col_indices(cost_matrix.cols());
+  std::iota(std::begin(all_col_indices), std::end(all_col_indices), 0);
+
+  std::sort(matched_col_indices.begin(), matched_col_indices.end());
+  std::sort(matched_row_indices.begin(), matched_row_indices.end());
+
+  std::set_difference(all_row_indices.begin(), all_row_indices.end(), matched_row_indices.begin(),
+                      matched_row_indices.end(), std::inserter(orphan_row_items, orphan_row_items.begin()));
+
+  std::set_difference(all_col_indices.begin(), all_col_indices.end(), matched_col_indices.begin(),
+                      matched_col_indices.end(), std::inserter(orphan_col_items, orphan_col_items.begin()));
+  return true;
+}
+
 bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   REPORT_ERROR_IF_NULL(conext_ptr);
   TImeWatch time_watch;
@@ -390,6 +617,7 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   inputarray[2] = outputs_vecs[0].data() + 3 * (4032 + 1008) * kOutUnit;
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
+  Eigen::MatrixXf Cost_face2head = Eigen::MatrixXf::Zero(3, 4);
   LOG(INFO) << "outputs_vecs size is : " << outputs_vecs.size() << " "
             << outputs_vecs[0].size();
   LOG(INFO) << "outputs_sizes is:" << nms_boxes_vec.size();

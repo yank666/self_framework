@@ -9,4 +9,4 @@
 	url = https://github.com/google/glog.git
 [submodule "thirdparty/eigen"]
 	path = thirdparty/eigen
-	url = https://github.com/eigenteam/eigen-git-mirror.git
+	url = https://gitlab.com/libeigen/eigen.git

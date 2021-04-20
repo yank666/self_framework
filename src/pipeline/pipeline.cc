@@ -6,6 +6,7 @@
 #include "src/utils/base.h"
 #include "stage_register.h"
 #include "deviceengine/device_register.h"
+
 namespace pipeline {
 enum ContextIdx : uint32_t { datainput = 0, dataoutput = 1, dataidx = 2 };
 
