@@ -20,12 +20,14 @@ set(GTEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/gtest/)
 include_directories(${GTEST_DIR}/googletest/include)
 add_subdirectory(${GTEST_DIR})
 
-#set(BUILD_TESTING OFF CACHE BOOL "glog test compile option" FORCE)
-#set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "glog test compile option" FORCE)
-#set(BUILD_SHARED_LIBS ON CACHE BOOL "glog test compile option" FORCE)
-#set(GLOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog)
-#include_directories(${GLOG_DIR}/src)
-#add_subdirectory(${GLOG_DIR})
+set(BUILD_TESTING OFF CACHE BOOL "glog test compile option" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL "glog test compile option" FORCE)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "glog test compile option" FORCE)
+set(GLOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog)
+include_directories(${GLOG_DIR}/src)
+add_subdirectory(${GLOG_DIR})
+
+
 
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/SuperBuild.cmake)
 
