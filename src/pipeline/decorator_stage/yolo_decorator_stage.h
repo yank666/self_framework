@@ -35,6 +35,8 @@ struct PersonInfo{
   std::vector<YoloV5Box> hand_packages;
   std::vector<std::pair<int, float>> attrs;
   std::vector<float> feature;
+  bool face_observeed = false;
+  bool handpackage_observed = false;
 };
 
 class YoloDerocatestage : public DecoratorStage {

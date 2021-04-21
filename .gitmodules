@@ -10,3 +10,6 @@
 [submodule "thirdparty/eigen"]
 	path = thirdparty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "thirdparty/opencv"]
+	path = thirdparty/opencv
+	url = https://gitee.com/mirrors/opencv.git
