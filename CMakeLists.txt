@@ -27,8 +27,6 @@ set(GLOG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glog)
 include_directories(${GLOG_DIR}/src)
 add_subdirectory(${GLOG_DIR})
 
-
-
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/SuperBuild.cmake)
 
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/eigen)

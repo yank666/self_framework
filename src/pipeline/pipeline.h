@@ -72,6 +72,9 @@ class DecoratorStage : public AbstractStage {
   virtual bool StagePreProcess(const contextPtr &conext_ptr) = 0;
   virtual bool StagePostProcess(const contextPtr &conext_ptr) = 0;
   bool RunSubStage(const contextPtr &conext_ptr) {
+    if (extra_stage_ptr_ == nullptr) {
+      return true;
+    }
     return extra_stage_ptr_->RunStage(conext_ptr);
   }
   DeviceStagePtr extra_stage_ptr_;

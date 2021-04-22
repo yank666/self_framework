@@ -52,14 +52,14 @@ char *BenchMark::ReadFromFile(std::string file_name, size_t memlen) {
 }
 
 
-
 TEST_F(BenchMark, st) {
   FLAGS_minloglevel = 0;
   std::string model_cfg_file = "./models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
   ASSERT_EQ(0, ret);
-  char *in = ReadFromFile("./input.bin", 1 * 3 * 384 * 672 * sizeof(float));
+  char *in = nullptr;
+  in = ReadFromFile("./input.bin", 1 * 3 * 384 * 672 * sizeof(float));
   ASSERT_NE(nullptr, in);
 
   pipeline::Pipeline ss;

@@ -15,7 +15,7 @@
 
 namespace pipeline {
 
-const float kThreshold = 0.6f;
+const float kThreshold = 0.3f;
 
 enum YoloInputDesc : int {
   kInb = 1,
@@ -61,7 +61,7 @@ const std::vector<std::vector<uint32_t>> kYoloV5ShapeNp{
 
 static const uint32_t kConfiIdx = 4;
 
-enum YoloDimDesc : int { idx_batch = 0, idx_channel, idx_h, idx_w };
+enum YoloDimDesc : int { idx_batch = 0, idx_channel = 1, idx_h = 2, idx_w = 3};
 
 enum ClassifyLabel : int {
   cls_person = 0,
@@ -70,7 +70,9 @@ enum ClassifyLabel : int {
   cls_handpackage
 };
 
-inline float sigmoid(float x) { return (1 / (1 + exp(-x))); }
+inline float sigmoid(float x) {
+  float temp = (1 / (1 + exp(-x)));
+  return temp; }
 
 inline float bbox_iou(const YoloV5Box& box1, const YoloV5Box& box2) {
   float xx1 = std::max<float>(box1.x1, box2.x1);
@@ -334,7 +336,7 @@ void YoloDerocatestage::ObtainBoxAndScore(
 
     vec_boxes[max_score_idx - 1].push_back(body_info);
   }
-
+  LOG(ERROR) << "Before NMS: " << vec_boxes[0].size() << " "<< vec_boxes[1].size() << " "<< vec_boxes[2].size() << " "<< vec_boxes[3].size() << " ";
   nms_boxes_vec->resize(kClassifyNum);
   for (size_t i = 0; i < kClassifyNum; ++i) {
     NMSProcess(vec_boxes[i], &(nms_boxes_vec->at(i)));
@@ -400,10 +402,16 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(std
   size_t num_head = nms_boxes->at(1).size();
   size_t num_face = nms_boxes->at(2).size();
   size_t num_package = nms_boxes->at(3).size();
+
+  LOG(INFO) << "num_body size is : " << num_body << " ";
+  LOG(INFO) << "num_head size is : " << num_head << " ";
+  LOG(INFO) << "num_face size is : " << num_face << " ";
+  LOG(INFO) << "num_package size is : " << num_package << " ";
+
   Eigen::MatrixXf Cost_body2head = Eigen::MatrixXf::Zero(num_body, num_head);
   for (size_t i = 0; i < num_body; ++i){
     for (size_t j = 0; j < num_head; ++j) {
-      float iou = bbox_iou(nms_boxes->at(0)[i].related_box, nms_boxes->at(1)[j].related_box);
+      float iou = bbox_iou(nms_boxes->at(0)[i].related_box, nms_boxes->at(1)[j].box);
       // float cost_pos = bbox_dist(body_detections[i]->GetAssociatedBox(), head_detections[j]->GetAssociatedBox());
       Cost_body2head(i, j) = 1 - iou;
     }
@@ -422,12 +430,10 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(std
     person_info.label = 0;
     person_info.attrs = nms_boxes->at(0)[body_i].attrs;
     person_info.body.conf = nms_boxes->at(0)[body_i].score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].score;
 
     person_info.body = nms_boxes->at(0)[body_i].box;
     person_info.head = nms_boxes->at(1)[head_j].box;
-    person_info.body = nms_boxes->at(0)[body_i].box;
-    person_info.head = nms_boxes->at(1)[head_j].related_box;
 
     associated_detections->push_back(person_info);
   }
@@ -465,26 +471,24 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(std
     PersonInfo person_info;
     person_info.label = 0;
     person_info.attrs = nms_boxes->at(1)[head_j].attrs;
-    person_info.body.conf = nms_boxes->at(1)[head_j].score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
+    person_info.body.conf = nms_boxes->at(1)[head_j].related_score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].score;
 
-    person_info.body = nms_boxes->at(1)[head_j].box;
-
-    person_info.body = nms_boxes->at(1)[head_j].box;
-    person_info.head = nms_boxes->at(1)[head_j].related_box;
+    person_info.body = nms_boxes->at(1)[head_j].related_box;
+    person_info.head = nms_boxes->at(1)[head_j].box;
 
     associated_detections->push_back(person_info);
   }
 
   int num_person = associated_detections->size();
-
+  LOG(INFO) << "associated_detections size is : " << num_person << " ";
   // 2.0 face 与 head 关联
   Eigen::MatrixXf Cost_face2head = Eigen::MatrixXf::Zero(num_face, num_person);
   for (size_t i = 0; i < num_face; ++i)
   {
     for (size_t j = 0; j < num_person; ++j)
     {
-      float iou = bbox_iou(nms_boxes->at(1)[i].box, nms_boxes->at(1)[j].related_box);
+      float iou = bbox_iou(nms_boxes->at(2)[i].related_box, associated_detections->at(j).head);
       Cost_face2head(i, j) = 1 - iou;
     }
   }
@@ -615,13 +619,14 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   inputarray[0] = outputs_vecs[0].data();
   inputarray[1] = outputs_vecs[0].data() + 3 * 4032 * kOutUnit;
   inputarray[2] = outputs_vecs[0].data() + 3 * (4032 + 1008) * kOutUnit;
+  LOG(INFO) << *inputarray[0] << " " << *(inputarray[0]+ 1) << " "<< *(inputarray[0]+ 2);
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
-  Eigen::MatrixXf Cost_face2head = Eigen::MatrixXf::Zero(3, 4);
+
   LOG(INFO) << "outputs_vecs size is : " << outputs_vecs.size() << " "
             << outputs_vecs[0].size();
-  LOG(INFO) << "outputs_sizes is:" << nms_boxes_vec.size();
+  LOG(INFO) << "associate_vec is:" << associate_vec->size();
   LOG(INFO) << "Run Yolo postdecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
