@@ -53,18 +53,24 @@ char *BenchMark::ReadFromFile(std::string file_name, size_t memlen) {
 
 
 TEST_F(BenchMark, st) {
+  uint32_t kInputUnit = 1 * 3 * 384 * 672;
   FLAGS_minloglevel = 0;
-  std::string model_cfg_file = "./models.cfg";
+  std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules/models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
   ASSERT_EQ(0, ret);
   char *in = nullptr;
-  in = ReadFromFile("./input.bin", 1 * 3 * 384 * 672 * sizeof(float));
+  in = ReadFromFile("/home/yankai.yan/workbase/codeLib/refactor/bin/input_ori.bin", kInputUnit * sizeof(uint8_t));
   ASSERT_NE(nullptr, in);
-
+  uint8_t *print_ptr = reinterpret_cast<uint8_t *>(in);
+  LOG(INFO) << (int32_t)(*print_ptr) << " " << (int32_t)*(print_ptr+ 1) << " "<< (int32_t)*(print_ptr+ 2);
+  std::vector<uint32_t> input_size;
+  input_size.push_back(kInputUnit * sizeof(uint8_t));
   pipeline::Pipeline ss;
-  ss.InitPipeline(cfg_vec, &in);
+//  char* input_array[] = {in};
+  ss.InitPipeline(cfg_vec, &in, input_size);
   ss.RunPipeline();
+  free(in);
   LOG(INFO) << "Run SUCCESS!";
 }
 

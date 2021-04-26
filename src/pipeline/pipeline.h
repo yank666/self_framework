@@ -86,7 +86,7 @@ class Pipeline {
   Pipeline() = default;
   ~Pipeline() = default;
   bool InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                    char **input_data);
+                    char **input_data, const std::vector<uint32_t> &input_size);
   void SetStage(const AbstractStagePtr &stage_ptr);
   const DeviceStagePtr GetStage(const uint32_t &poisiton);
   const DeviceStagePtr FindStage(const std::string &stage_name);

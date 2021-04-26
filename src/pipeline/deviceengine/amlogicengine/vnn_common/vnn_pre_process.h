@@ -59,10 +59,11 @@ const vsi_nn_preprocess_map_element_t *vnn_GetPrePorcessMap();
 uint32_t vnn_GetPrePorcessMapCount();
 
 vsi_status vnn_PreProcessPixels(vsi_nn_graph_t *graph, void *img_data,
-                                uint32_t size);
+                                float *fdata);
 
 void vnn_SetMeanandNorm(float mean1, float mean2, float mean3, float scale);
 
+void vnn_SetChannelOrder(int ch1, int ch2, int ch3);
 #ifdef __cplusplus
 }
 #endif

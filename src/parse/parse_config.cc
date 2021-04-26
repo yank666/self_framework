@@ -40,7 +40,7 @@ int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_position_ = model_param.model_position();
     model_ptr->model_type_ = model_param.infer_type();
-
+    model_ptr->data_format_ = model_param.model_input_data_format();
     for (int i = 0; i < model_param.input_shape_size(); ++i) {
       ParserModel::BlobShape shape = model_param.input_shape(i);
       std::vector<uint32_t> inputs;

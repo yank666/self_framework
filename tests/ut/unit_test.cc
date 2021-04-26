@@ -2,9 +2,11 @@
 #include "gtest/gtest.h"
 #include <fstream>
 #include <memory>
+#include <cstdio>
 #include "glog/logging.h"
 #include "src/pipeline/deviceengine/abstractengine.h"
 #include "src/pipeline/decorator_stage/yolo_decorator_stage.h"
+#include "opencv2/opencv.hpp"
 using namespace pipeline;
 using namespace device;
 class DecoratorUT : public testing::Test {
@@ -67,5 +69,8 @@ TEST_F(DecoratorUT, yolodecorator) {
   LOG(INFO) << "Run SUCCESS!";
 };
 
-TEST_F(DecoratorUT, simple) {
+TEST_F(DecoratorUT, OpencvTest) {
+  cv::Mat img;
+  cv::imread("1.jpg");
+  LOG(INFO) << "Run SUCCESS!";
 }

@@ -705,27 +705,7 @@ final:
   return status;
 }
 
-vsi_status vnn_PreProcess(vsi_nn_graph_t *graph, const char **inputs,
-                          uint32_t input_num) {
-  uint32_t i;
-  vsi_status status;
 
-  status = VSI_FAILURE;
-  _load_input_meta();
-  if (input_num != graph->input.num) {
-    // printf("Graph need %u inputs, but enter %u inputs!!!\n",
-    //       graph->input.num, input_num);
-    // return status;
-  }
-  for (i = 0; i < input_num; i++) {
-    status = _handle_multiple_inputs(graph, i, inputs[i]);
-    TEST_CHECK_STATUS(status, final);
-  }
-
-  status = VSI_SUCCESS;
-final:
-  return status;
-}
 
 uint32_t vnn_LoadFP32DataFromTextFile(const char *fname, uint8_t **buffer_ptr,
                                       uint32_t *buffer_sz) {
@@ -855,39 +835,46 @@ void vnn_SetMeanandNorm(float mean1, float mean2, float mean3, float scale) {
   input_meta_tab[0].image.preprocess[0] = VNN_PREPRO_REORDER;
   input_meta_tab[0].image.preprocess[1] = VNN_PREPRO_MEAN;
   input_meta_tab[0].image.preprocess[2] = VNN_PREPRO_SCALE;
-  // TODO: (yankai) need add channel  type
-  input_meta_tab[0].image.reorder[0] = 2;
-  input_meta_tab[0].image.reorder[1] = 1;
-  input_meta_tab[0].image.reorder[2] = 0;
   input_meta_tab[0].image.mean[0] = mean1;
   input_meta_tab[0].image.mean[1] = mean2;
   input_meta_tab[0].image.mean[2] = mean3;
   input_meta_tab[0].image.scale = scale;
 }
 
+void vnn_SetChannelOrder(int ch1, int ch2, int ch3) {
+  // TODO: (yankai) need add channel  type
+  input_meta_tab[0].image.reorder[0] = ch1;
+  input_meta_tab[0].image.reorder[1] = ch2;
+  input_meta_tab[0].image.reorder[2] = ch3;
+}
+
+
 vsi_status vnn_PreProcessPixels(vsi_nn_graph_t *graph, void *img_data,
-                                uint32_t size) {
+                                float *fdata) {
   vsi_nn_tensor_t *tensor;
   vsi_status status = VSI_FAILURE;
   vnn_input_meta_t meta;
-  float *fdata = NULL;
+//  float *fdata = NULL;
   uint8_t *data = NULL;
   char dumpInput[128];
 
-  //   _load_input_meta();
+  //_load_input_meta();
   memset(&meta, 0, sizeof(vnn_input_meta_t));
-  //   __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vsi_nn_GetTensor,
-  //   graph=%p", graph);
-  //   __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vsi_nn_GetTensor,
-  //   s=%p", graph->input);
   tensor = vsi_nn_GetTensor(graph, graph->input.tensors[0]);
-  //   __android_log_print(ANDROID_LOG_INFO, "libaliJNA", "vsi_nn_GetTensor
-  //   end");
-  meta = input_meta_tab[0];
 
+  meta = input_meta_tab[0];
+  FILE *fd = fopen("create.bin","rb");
+  if(fd == NULL)
+  {
+    return -1;
+  }
+  fread(img_data, sizeof(uint8_t), 774144,fd);
   fdata = _imageData_to_float32((uint8_t *)img_data, tensor);
   TEST_CHECK_PTR(fdata, final);
 
+  for (int i = 0; i < 10; i++) {
+    printf("=============%hhu=====================", ((uint8_t *)img_data)[i]);
+  }
   for (int i = 0; i < _cnt_of_array(meta.image.preprocess); i++) {
     switch (meta.image.preprocess[i]) {
       case VNN_PREPRO_NONE:

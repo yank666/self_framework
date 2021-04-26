@@ -79,10 +79,17 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   }
   vnn_SetMeanandNorm(model_cfg_->model_mean_[0], model_cfg_->model_mean_[1],
                      model_cfg_->model_mean_[2], model_cfg_->model_norm_[0]);
-  auto input_data = cur_context_ptr->dataflow_[0];
-  auto input_size = cur_context_ptr->datasize_[0];
-  status = vnn_PreProcessPixels(self_graph_, input_data.data(),
-                                static_cast<uint32_t>(input_size));
+  if (model_cfg_->data_format_ == "RGB") {
+    vnn_SetChannelOrder(0, 1, 2);
+  } else if (model_cfg_->data_format_ == "BGR") {
+    vnn_SetChannelOrder(2, 1, 0);
+  } else {
+    LOG(ERROR) << "Amlogical model preprocess can't support data fomat: " << model_cfg_->data_format_;
+  }
+
+  float* out = nullptr;
+  status = vnn_PreProcessPixels(self_graph_,  cur_context_ptr->dataflow_[0].data(), out);
+
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";
     return -1;

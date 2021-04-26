@@ -14,10 +14,11 @@ struct ModelConfig {
   std::string model_name_;
   std::string model_type_;
   std::string model_binary_;
+  std::string data_format_;
   std::vector<std::vector<uint32_t>> model_inshape_;
   std::vector<std::vector<uint32_t>> model_outshape_;
-  std::vector<uint32_t> model_norm_;
-  std::vector<uint32_t> model_mean_;
+  std::vector<float> model_norm_;
+  std::vector<float> model_mean_;
 };
 
 using ModelCfgPtr = std::shared_ptr<ModelConfig>;

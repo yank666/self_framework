@@ -39,29 +39,30 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
   REPORT_ERROR_IF_NULL(cur_context_ptr);
   REPORT_ERROR_IF_NULL(cur_model_cfg);
   cur_context_ptr->name_ = cur_model_cfg->model_name_;
-  cur_context_ptr->datasize_.resize(dataidx);
-  cur_context_ptr->dataflow_.resize(dataidx);
+
+  uint32_t input_cnt = cur_model_cfg->model_inshape_.size();
+  cur_context_ptr->datasize_.resize(input_cnt);
+  cur_context_ptr->dataflow_.resize(input_cnt);
   uint32_t input_sum = 1;
   for (auto &inshape : cur_model_cfg->model_inshape_) {
     uint32_t input_sum_temp = std::accumulate(
       std::begin(inshape), std::end(inshape), 1, std::multiplies<uint32_t>());
     input_sum *= input_sum_temp;
+    cur_context_ptr->datasize_[datainput] = input_sum;
+    cur_context_ptr->dataflow_[datainput].resize(input_sum);
   }
-  cur_context_ptr->datasize_[datainput] = input_sum;
-  cur_context_ptr->dataflow_[datainput].resize(input_sum);
-  uint32_t output_sum = 1;
-  for (auto &outshape : cur_model_cfg->model_outshape_) {
-    uint32_t output_sum_temp = std::accumulate(
-      std::begin(outshape), std::end(outshape), 1, std::multiplies<uint32_t>());
-    output_sum *= output_sum_temp;
-  }
-  cur_context_ptr->datasize_[dataoutput] = output_sum;
-  cur_context_ptr->dataflow_[dataoutput].resize(output_sum);
+
+//  uint32_t output_sum = 1;
+//  for (auto &outshape : cur_model_cfg->model_outshape_) {
+//    uint32_t output_sum_temp = std::accumulate(
+//      std::begin(outshape), std::end(outshape), 1, std::multiplies<uint32_t>());
+//    output_sum *= output_sum_temp;
+//  }
   return true;
 }
 
 bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                            char **input_data) {
+                            char **input_data, const std::vector<uint32_t> &input_size) {
   if (model_cfgs.empty()) {
     LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
     return false;
@@ -76,9 +77,8 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
     if (stage_context_ptr == nullptr) {
       return false;
     }
-    auto stage_data_input = stage_context_ptr->dataflow_[datainput];
-    memcpy(stage_data_input.data(), input_data[i],
-           stage_context_ptr->datasize_[datainput] * sizeof(float));
+    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i], input_size[i]);
+
   }
   return true;
 }

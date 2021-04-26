@@ -1,26 +1,30 @@
 include (ExternalProject)
+set(EXTERNAL_LIB_CMAKE_CXX_COMPILER "${CMAKE_CXX_COMPILER} -Werror")
 
-#ExternalProject_Add (External_glog
-#        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/glog
-#        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-#        -DBUILD_SHARED_LIBS=ON -DWITH_GFLAGS=OFF
-#        INSTALL_COMMAND ""
-#        BINARY_DIR ${PROJECT_SOURCE_DIR}/build/thirdparty/glog
-#        )
-#add_library(glog::glog STATIC IMPORTED)
-#set_target_properties(glog::glog PROPERTIES IMPORTED_LOCATION ${PROJECT_SOURCE_DIR}/build/thirdparty/glog/libglog.so)
-#add_dependencies(glog::glog External_glog)
-#include_directories(${PROJECT_SOURCE_DIR}/build/thirdparty/glog)
-#include_directories(${PROJECT_SOURCE_DIR}/thirdparty/glog/src)
+if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
+    set(EXTRA_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=$ENV{ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_NATIVE_API_LEVEL=28
+            -DANDROID_NDK=$ENV{ANDROID_NDK} -DANDROID_ABI=armeabi-v7a -DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang
+            -DANDROID_STL=c++_shared)
+else()
+    set(EXTRA_CMAKE_ARGS "")
+endif()
 
-ExternalProject_Add (OpenCV
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/opencv
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DWITH_PROTOBUF=OFF -DWITH_WEBP=OFF -DWITH_IPP=OFF -DWITH_ADE=OFF
-        -DBUILD_ZLIB=ON  -DBUILD_JPEG=ON  -DBUILD_PNG=ON -DBUILD_OPENEXR=ON
-        -DBUILD_TESTING=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_opencv_apps=OFF -DBUILD_opencv_python3=OFF
-        -DBUILD_TIFF=OFF  -DWITH_JASPER=OFF  -DBUILD_JASPER=OFF
-        INSTALL_COMMAND ""
-        BINARY_DIR ${PROJECT_SOURCE_DIR}/build/thirdparty/opencv
-        )
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/eigen)
+
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/utils)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/client)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/ops)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/ovx_inc/CL)
+
+
+set(third_party_deps "")
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Glog.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Gtest.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Protobuf.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Opencv.cmake)
+add_custom_target(third_party ALL DEPENDS ${third_party_deps})
 
 
