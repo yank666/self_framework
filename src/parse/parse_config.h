@@ -14,21 +14,22 @@ struct ModelConfig {
   std::string model_name_;
   std::string model_type_;
   std::string model_binary_;
+  std::string data_format_;
   std::vector<std::vector<uint32_t>> model_inshape_;
   std::vector<std::vector<uint32_t>> model_outshape_;
-  std::vector<uint32_t> model_norm_;
-  std::vector<uint32_t> model_mean_;
+  std::vector<float> model_norm_;
+  std::vector<float> model_mean_;
 };
 
 using ModelCfgPtr = std::shared_ptr<ModelConfig>;
 using ModelCfgList = std::vector<std::shared_ptr<ModelConfig>>;
 
 class ParseConfig {
-public:
+ public:
   ParseConfig() = default;
   ~ParseConfig() = default;
-  static bool ParseConfigFromProto(const std::string &cfg_file,
-                                   pipeline::ModelCfgList *model_list);
+  static int ParseConfigFromProto(const std::string &cfg_file,
+                                  pipeline::ModelCfgList *model_list);
 };
-}
-#endif // SELF_ARCHITECTURE_PARSECONFIG_H
+}  // namespace pipeline
+#endif  // SELF_ARCHITECTURE_PARSECONFIG_H

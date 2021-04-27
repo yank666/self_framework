@@ -3,97 +3,104 @@
 #include <iostream>
 #include <numeric>
 #include "glog/logging.h"
+#include "src/utils/base.h"
 #include "stage_register.h"
-#include "../deviceengine/device_register.h"
-namespace pipeline{
-enum ContextIdx: uint32_t {datainput = 0, dataoutput = 1, dataidx = 2};
+#include "deviceengine/device_register.h"
+
+namespace pipeline {
+enum ContextIdx : uint32_t { datainput = 0, dataoutput = 1, dataidx = 2 };
 
 void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
   DeviceStagePtr model_inference_ptr = std::make_shared<DeviceStage>(model_cfg);
-  if (model_inference_ptr == nullptr) {
-    LOG(ERROR) << "Pipeline init failed, create DeviceStage return nullptr!";
-    return;
-  }
-  model_inference_ptr->FillStagebyEngine();
-  contextPtr stage_context = std::make_shared<Context>();
-  if (stage_context == nullptr) {
-    LOG(ERROR) << "Pipeline init failed, create Context return nullptr!";
-    return;
-  }
+  REPORT_EXCEPTION_IF_NULL(model_inference_ptr);
+  contextPtr stage_context = std::make_shared<device::Context>();
+  REPORT_EXCEPTION_IF_NULL(stage_context);
+
   CreateContexts(stage_context, model_cfg);
+  model_inference_ptr->FillStagebyEngine(stage_context);
   DecorStagePtr exec_stage_ptr =
-      DeviceInferenceFactory::GetInstance().GetDeviceInference(model_inference_ptr->GetModelName());
+    DeviceInferenceFactory::GetInstance().GetDeviceInference(
+      model_inference_ptr->GetModelName());
   if (exec_stage_ptr != nullptr) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
     stages_[model_cfg->model_position_].push_back(exec_stage_ptr);
     process_context_.insert(std::make_pair(
-        model_cfg->model_name_,std::make_pair(exec_stage_ptr, stage_context)));
+      model_cfg->model_name_, std::make_pair(exec_stage_ptr, stage_context)));
   } else {
     stages_[model_cfg->model_position_].push_back(model_inference_ptr);
-    process_context_.insert(std::make_pair(model_cfg->model_name_,
-                        std::make_pair(model_inference_ptr, stage_context)));
+    process_context_.insert(
+      std::make_pair(model_cfg->model_name_,
+                     std::make_pair(model_inference_ptr, stage_context)));
   }
 }
 
-bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr, const ModelCfgPtr &cur_model_cfg) {
-  if (cur_context_ptr == nullptr || cur_model_cfg == nullptr) {
-    // LOG(ERROR) << "Create context failed , create model context failed!";
-    return true;
-  }
+bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
+                              const ModelCfgPtr &cur_model_cfg) {
+  REPORT_ERROR_IF_NULL(cur_context_ptr);
+  REPORT_ERROR_IF_NULL(cur_model_cfg);
   cur_context_ptr->name_ = cur_model_cfg->model_name_;
-  cur_context_ptr->datasize_.resize(dataidx);
-  cur_context_ptr->dataflow_.resize(dataidx);
-  uint32_t  input_sum = 1;
+
+  uint32_t input_cnt = cur_model_cfg->model_inshape_.size();
+  cur_context_ptr->datasize_.resize(input_cnt);
+  cur_context_ptr->dataflow_.resize(input_cnt);
+  uint32_t input_sum = 1;
   for (auto &inshape : cur_model_cfg->model_inshape_) {
-    uint32_t input_sum_temp = std::accumulate(std::begin(inshape),
-                std::end(inshape), 1, std::multiplies<uint32_t>());
+    uint32_t input_sum_temp = std::accumulate(
+      std::begin(inshape), std::end(inshape), 1, std::multiplies<uint32_t>());
     input_sum *= input_sum_temp;
+    cur_context_ptr->datasize_[datainput] = input_sum;
+    cur_context_ptr->dataflow_[datainput].resize(input_sum);
   }
-  cur_context_ptr->datasize_[datainput] = input_sum;
-  cur_context_ptr->dataflow_[datainput].resize(input_sum);
-  uint32_t  output_sum = 1;
-  for (auto &outshape : cur_model_cfg->model_outshape_) {
-    uint32_t output_sum_temp = std::accumulate(std::begin(outshape),
-                std::end(outshape),1, std::multiplies<uint32_t>());
-    output_sum *= output_sum_temp;
-  }
-  cur_context_ptr->datasize_[dataoutput] = output_sum;
-  cur_context_ptr->dataflow_[dataoutput].resize(output_sum);
+
+  //  uint32_t output_sum = 1;
+  //  for (auto &outshape : cur_model_cfg->model_outshape_) {
+  //    uint32_t output_sum_temp = std::accumulate(
+  //      std::begin(outshape), std::end(outshape), 1,
+  //      std::multiplies<uint32_t>());
+  //    output_sum *= output_sum_temp;
+  //  }
   return true;
 }
 
 bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                                  char **input_data) {
+                            char **input_data,
+                            const std::vector<uint32_t> &input_size) {
   if (model_cfgs.empty()) {
     LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
     return false;
   }
   stages_.resize(model_cfgs.size());
-  for (const auto & model_cfg : model_cfgs) {
+  for (const auto &model_cfg : model_cfgs) {
     RegisterStage(model_cfg);
   }
-
   for (size_t i = 0; i < stages_[0].size(); ++i) {
-    std::string stage_name= stages_[0][i]->GetModelName();
-    auto stage_context_ptr  = GetStageContextbyName(stage_name);
-//    auto stage_data_input = stage_context.second->dataflow_[datainput];
-//    memcpy(stage_data_input.data(), input_data[i],
-//        cut_stage_ctx->datasize_[datainput] * sizeof(float));
+    std::string stage_name = stages_[0][i]->GetModelName();
+    auto stage_context_ptr = GetStageContextbyName(stage_name);
+    if (stage_context_ptr == nullptr) {
+      return false;
+    }
+    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
+           input_size[i]);
   }
   return true;
 }
 
 void Pipeline::RunPipeline() {
   std::for_each(stages_.begin(), stages_.end(),
-      [&](const std::vector<AbstractStagePtr> & stage_vec) {
-    // TODO (yankai): consider add multithread exec staege ,if stage_vec size is more than 1;
-    for (auto &stage : stage_vec) {
-      stage->RunStage(process_context_);
-    }
-  });
+                [&](const std::vector<AbstractStagePtr> &stage_vec) {
+                  // TODO (yankai): consider add multithread exec staege ,if
+                  // stage_vec size is more than 1;
+                  for (auto &stage : stage_vec) {
+                    auto cur_context_ptr =
+                      GetStageContextbyName(stage->GetModelName());
+                    REPORT_ERROR_IF_NULL(cur_context_ptr);
+                    stage->RunStage(cur_context_ptr);
+                  }
+                  return true;
+                });
 }
 
-contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name){
+contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name) {
   auto iter = process_context_.find(stage_name);
   if (iter != process_context_.end()) {
     const ProcessContext &process_ctx = iter->second;
@@ -102,41 +109,40 @@ contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name){
   return nullptr;
 }
 
-DeviceStage::DeviceStage(const ModelCfgPtr& model_cfg) : AbstractStage(model_cfg) {
+DeviceStage::DeviceStage(const ModelCfgPtr &model_cfg)
+    : AbstractStage(model_cfg) {
   engine_ = device::DeviceEngineFactory::GetInstance().GetDeviceInference(
-      model_cfg->model_name_, model_cfg->model_type_);
+    model_cfg->model_name_, model_cfg->model_type_);
   engine_->SetModelCfg(model_cfg);
 };
 
-bool DeviceStage::FillStagebyEngine() {
+bool DeviceStage::FillStagebyEngine(const contextPtr &conext_ptr) {
   if (engine_ == nullptr) {
     LOG(ERROR) << "DeviceStage obtain engine is nullptr";
     return false;
   }
-  engine_->CreateGraph();
+  REPORT_ERROR_IF_NULL(conext_ptr);
+  engine_->CreateGraph(conext_ptr);
   return true;
 }
 
-bool DeviceStage::RunStage(const ProcessContextMap &conext_map) {
+bool DeviceStage::RunStage(const contextPtr &conext_ptr) {
   // TODO：add run graph
-  engine_->RunProcess();
+  engine_->RunProcess(conext_ptr);
   return true;
 }
 
-bool DecoratorStage::RunStage(const ProcessContextMap &conext_map) {
-  StagePreProcess(conext_map);
-  RunSubStage(conext_map);
-  StagePostProcess(conext_map);
+bool DecoratorStage::RunStage(const contextPtr &conext_ptr) {
+  StagePreProcess(conext_ptr);
+  RunSubStage(conext_ptr);
+  StagePostProcess(conext_ptr);
   return true;
 }
 
 bool DecoratorStage::AddProcess(const DeviceStagePtr &device_ptr) {
-  if (device_ptr == nullptr) {
-    //LOG(ERROR) << "DecoratorStage add process fail, becaus devicePte is nullptr";
-    return false;
-  }
+  REPORT_ERROR_IF_NULL(device_ptr);
   extra_stage_ptr_ = device_ptr;
   stage_name_ = device_ptr->GetModelName();
   return true;
 }
-}
+}  // namespace pipeline
