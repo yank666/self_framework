@@ -84,11 +84,13 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   } else if (model_cfg_->data_format_ == "BGR") {
     vnn_SetChannelOrder(2, 1, 0);
   } else {
-    LOG(ERROR) << "Amlogical model preprocess can't support data fomat: " << model_cfg_->data_format_;
+    LOG(ERROR) << "Amlogical model preprocess can't support data fomat: "
+               << model_cfg_->data_format_;
   }
 
-  float* out = nullptr;
-  status = vnn_PreProcessPixels(self_graph_,  cur_context_ptr->dataflow_[0].data(), out);
+  float *out = nullptr;
+  status = vnn_PreProcessPixels(self_graph_,
+                                cur_context_ptr->dataflow_[0].data(), out);
 
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";

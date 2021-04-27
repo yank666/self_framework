@@ -6,9 +6,9 @@ set(RUNTIME_LIB_DIR ${RUNTIME_PKG_NAME}/lib)
 set(RUNTIME_INC_DIR ${RUNTIME_PKG_NAME}/include)
 install(FILES ${PROJECT_SOURCE_DIR}/src/pipeline/pipeline.h DESTINATION ${RUNTIME_INC_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 
-install(FILES ${CMAKE_BINARY_DIR}/thirdparty/glog/libglog.so
+install(FILES ${CMAKE_BINARY_DIR}/thirdparty/glog/lib/libglog.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/thirdparty/protobuf/cmake/libprotobuf.a
+install(FILES ${CMAKE_BINARY_DIR}/thirdparty/protobuf/lib/libprotobuf.a
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/libpipeline.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
@@ -16,9 +16,14 @@ install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparseconfig.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/deviceengine/libdevice_utile.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
+
 if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
-    install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/deviceengine/amlogicengine/vnn_common/libamlogic_common.so
-            DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/jni/include/opencv DESTINATION ${RUNTIME_INC_DIR}
+            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/jni/include/opencv2 DESTINATION ${RUNTIME_INC_DIR}
+            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h")
+    install(FILES ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/libs/armeabi-v7a/libopencv_java3.so DESTINATION ${RUNTIME_LIB_DIR}
+            COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ddk/lib/armeabi-v7a/libjpeg.so
             DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ddk/lib/armeabi-v7a/libovxlib.so
@@ -26,12 +31,20 @@ if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
     install(FILES ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_shared.so
             DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 elseif(${ENABLE_ENGINE_TYPE} MATCHES "TRT")
-     message("==========ERROR: please add trt devices so============")
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/include DESTINATION ${RUNTIME_INC_DIR}
+            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h" PATTERN)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/lib/ DESTINATION ${RUNTIME_LIB_DIR}
+            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.so.*" PATTERN)
+#    install(FILES ${CMAKE_BINARY_DIR}/thirdparty/opencv/lib/libopencv_highgui.so.3.4.1 DESTINATION ${RUNTIME_LIB_DIR}
+#            COMPONENT ${RUNTIME_COMPONENT_NAME})
+#    install(FILES ${CMAKE_BINARY_DIR}/thirdparty/opencv/lib/libopencv_imgproc.so.3.4.1 DESTINATION ${RUNTIME_LIB_DIR}
+#            COMPONENT ${RUNTIME_COMPONENT_NAME})
+#    install(FILES ${CMAKE_BINARY_DIR}/thirdparty/opencv/lib/libopencv_imgcodecs.so.3.4.1 DESTINATION ${RUNTIME_LIB_DIR}
+#            COMPONENT ${RUNTIME_COMPONENT_NAME})
 endif()
 
-
 if(BUILD_TESTCASE)
-    install(FILES ${CMAKE_BINARY_DIR}/lib/libgtest.so
+    install(FILES ${CMAKE_BINARY_DIR}/thirdparty/gtest/lib/libgtest.so
             DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(TARGETS test_st RUNTIME
             DESTINATION ${RUNTIME_BIN_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})

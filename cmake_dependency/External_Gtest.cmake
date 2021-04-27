@@ -4,7 +4,7 @@ SET(GLOG_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest)
 SET(GTEST_INSTALL_DIR   ${CMAKE_BINARY_DIR}/thirdparty/gtest)
 SET(GTEST_INCLUDE_DIR "${GLOG_INSTALL_DIR}/include" CACHE PATH "gtest include directory." FORCE)
 set(GTEST_LIBRARIES "${GTEST_INSTALL_DIR}/lib/libgtest.so" CACHE FILEPATH "gtest libraries." FORCE)
-
+set(GTEST_MAIN_LIBRARIES "${GTEST_INSTALL_DIR}/lib/libgtest_main.so" CACHE FILEPATH "gtest_main libraries." FORCE)
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIR})
 
 ExternalProject_Add (External_gtest
@@ -26,4 +26,6 @@ ExternalProject_Add (External_gtest
 
 ADD_LIBRARY(gtest::gtest SHARED IMPORTED GLOBAL)
 SET_PROPERTY(TARGET gtest::gtest PROPERTY IMPORTED_LOCATION ${GTEST_LIBRARIES})
+ADD_LIBRARY(gtest::gtest_main SHARED IMPORTED GLOBAL)
+SET_PROPERTY(TARGET gtest::gtest_main PROPERTY IMPORTED_LOCATION ${GTEST_MAIN_LIBRARIES})
 LIST(APPEND third_party_deps External_gtest)

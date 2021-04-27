@@ -29,7 +29,7 @@ class ParseConfig {
   ParseConfig() = default;
   ~ParseConfig() = default;
   static int ParseConfigFromProto(const std::string &cfg_file,
-                                   pipeline::ModelCfgList *model_list);
+                                  pipeline::ModelCfgList *model_list);
 };
 }  // namespace pipeline
 #endif  // SELF_ARCHITECTURE_PARSECONFIG_H

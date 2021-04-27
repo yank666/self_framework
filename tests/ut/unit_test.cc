@@ -9,19 +9,20 @@
 #include "opencv2/opencv.hpp"
 using namespace pipeline;
 using namespace device;
+
 class DecoratorUT : public testing::Test {
  public:
   DecoratorUT() = default;
   ~DecoratorUT() = default;
   static void SetUpTestCase(){};
   static void TearDownTestCase(){};
-//  char *ReadFromFile(std::string file_name, size_t memlen);
+  char *ReadFromFile(std::string file_name, size_t memlen);
   // every TEST_F macro will enter one
   virtual void SetUp(){};
   virtual void TearDown(){};
 };
 
-char *ReadFromFile(std::string file_name, size_t memlen) {
+char *DecoratorUT::ReadFromFile(std::string file_name, size_t memlen) {
   std::ifstream fin(file_name, std::ios::binary);
   if (!fin.good()) {
     LOG(ERROR) << "file: " << file_name << " is not exist";
@@ -66,11 +67,10 @@ TEST_F(DecoratorUT, yolodecorator) {
   memcpy(context_ptr->out_dataflow_[0].data(), in, kInputSize * sizeof(float));
   auto yolo_stage_ptr = std::make_shared<YoloDerocatestage>();
   yolo_stage_ptr->RunStage(context_ptr);
+  free(in);
   LOG(INFO) << "Run SUCCESS!";
-};
+}
 
-TEST_F(DecoratorUT, OpencvTest) {
-  cv::Mat img;
-  cv::imread("1.jpg");
-  LOG(INFO) << "Run SUCCESS!";
+TEST_F(DecoratorUT, imread) {
+
 }

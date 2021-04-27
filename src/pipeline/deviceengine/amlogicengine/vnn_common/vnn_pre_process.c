@@ -705,8 +705,6 @@ final:
   return status;
 }
 
-
-
 uint32_t vnn_LoadFP32DataFromTextFile(const char *fname, uint8_t **buffer_ptr,
                                       uint32_t *buffer_sz) {
   float fval = 0.0;
@@ -848,13 +846,12 @@ void vnn_SetChannelOrder(int ch1, int ch2, int ch3) {
   input_meta_tab[0].image.reorder[2] = ch3;
 }
 
-
 vsi_status vnn_PreProcessPixels(vsi_nn_graph_t *graph, void *img_data,
                                 float *fdata) {
   vsi_nn_tensor_t *tensor;
   vsi_status status = VSI_FAILURE;
   vnn_input_meta_t meta;
-//  float *fdata = NULL;
+  //  float *fdata = NULL;
   uint8_t *data = NULL;
   char dumpInput[128];
 
@@ -863,12 +860,11 @@ vsi_status vnn_PreProcessPixels(vsi_nn_graph_t *graph, void *img_data,
   tensor = vsi_nn_GetTensor(graph, graph->input.tensors[0]);
 
   meta = input_meta_tab[0];
-  FILE *fd = fopen("create.bin","rb");
-  if(fd == NULL)
-  {
+  FILE *fd = fopen("create.bin", "rb");
+  if (fd == NULL) {
     return -1;
   }
-  fread(img_data, sizeof(uint8_t), 774144,fd);
+  fread(img_data, sizeof(uint8_t), 774144, fd);
   fdata = _imageData_to_float32((uint8_t *)img_data, tensor);
   TEST_CHECK_PTR(fdata, final);
 

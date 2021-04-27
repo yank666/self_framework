@@ -52,17 +52,19 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
     cur_context_ptr->dataflow_[datainput].resize(input_sum);
   }
 
-//  uint32_t output_sum = 1;
-//  for (auto &outshape : cur_model_cfg->model_outshape_) {
-//    uint32_t output_sum_temp = std::accumulate(
-//      std::begin(outshape), std::end(outshape), 1, std::multiplies<uint32_t>());
-//    output_sum *= output_sum_temp;
-//  }
+  //  uint32_t output_sum = 1;
+  //  for (auto &outshape : cur_model_cfg->model_outshape_) {
+  //    uint32_t output_sum_temp = std::accumulate(
+  //      std::begin(outshape), std::end(outshape), 1,
+  //      std::multiplies<uint32_t>());
+  //    output_sum *= output_sum_temp;
+  //  }
   return true;
 }
 
 bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                            char **input_data, const std::vector<uint32_t> &input_size) {
+                            char **input_data,
+                            const std::vector<uint32_t> &input_size) {
   if (model_cfgs.empty()) {
     LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
     return false;
@@ -77,8 +79,8 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
     if (stage_context_ptr == nullptr) {
       return false;
     }
-    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i], input_size[i]);
-
+    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
+           input_size[i]);
   }
   return true;
 }

@@ -6,7 +6,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
 
 set(FRAME_DEPENDENCIES "")
-include(${PROJECT_SOURCE_DIR}/cmake_dependency/SuperBuild.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -26,7 +26,7 @@ add_subdirectory(src/parse)
 if (BUILD_TESTCASE)
     add_subdirectory(tests)
 endif()
-#include(${PROJECT_SOURCE_DIR}/cmake_dependency/package.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/Package.cmake)
 
 #include_directories(${OPENCV_INCLUDE_DIR})
 #add_executable(main "")

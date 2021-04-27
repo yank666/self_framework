@@ -13,7 +13,7 @@
 using google_FileInputStream = google::protobuf::io::FileInputStream;
 namespace pipeline {
 int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
-                                       pipeline::ModelCfgList *model_list) {
+                                      pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
   if (-1 == fd) {
     LOG(ERROR) << "Fail to open config file: " << cfg_file
