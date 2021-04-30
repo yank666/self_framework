@@ -6,13 +6,14 @@
 #define SELF_ARCHITECTURE_PIPELINE_H
 
 #include "deviceengine/abstractengine.h"
-#include "deviceengine/trtengine/trt_engine.h"
-#include "../parse/parse_config.h"
-#include "glog/logging.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <atomic>
+#include "src/parse/parse_config.h"
+#include "glog/logging.h"
+#include "deviceengine/trtengine/trt_engine.h"
 
 namespace pipeline {
 using device::contextPtr;
@@ -87,17 +88,21 @@ class Pipeline {
   ~Pipeline() = default;
   bool InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
                     char **input_data, const std::vector<uint32_t> &input_size);
+  void RunPipeline();
+  bool PushDatatoPipeline(char **input_data, const std::vector<uint32_t> &input_size);
+  contextPtr GetStageContextbyName(const std::string &stage_name);
+  bool GetStatusofPipeline() {return is_ready_.load();}
+
+ protected:
+  void RegisterStage(const ModelCfgPtr &model_cfg);
+  bool CreateContexts(const contextPtr &context_ptr,
+                      const ModelCfgPtr &model_cfg);
+
   void SetStage(const AbstractStagePtr &stage_ptr);
   const DeviceStagePtr GetStage(const uint32_t &poisiton);
   const DeviceStagePtr FindStage(const std::string &stage_name);
-  void RunPipeline();
-  void RegisterStage(const ModelCfgPtr &model_cfg);
-  bool SetDataFlowBuf(const std::vector<AbstractStagePtr> &cur_stage_vec);
-  bool CreateContexts(const contextPtr &context_ptr,
-                      const ModelCfgPtr &model_cfg);
-  contextPtr GetStageContextbyName(const std::string &stage_name);
 
- protected:
+  std::atomic<bool>  is_ready_{false};
   std::vector<std::vector<AbstractStagePtr>> stages_;
   ProcessContextMap process_context_;
 };

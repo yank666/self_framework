@@ -7,6 +7,7 @@
 #include "src/parse/parse_config.h"
 #include "src/pipeline/pipeline.h"
 #include "opencv2/opencv.hpp"
+
 using namespace pipeline;
 
 class BenchMark : public testing::Test {
@@ -72,19 +73,19 @@ TEST_F(BenchMark, st) {
   LOG(INFO) << "Run SUCCESS!";
 }
 
-TEST_F(BenchMark, imread) {
+TEST_F(BenchMark, readnull) {
   uint32_t kInputUnit = 1 * 3 * 384 * 672;
   cv::Mat img = cv::imread("input.jpg");
   ASSERT_NE(img.empty(), true);
-  std::string model_cfg_file = "models.cfg";
-  std::vector<pipeline::ModelCfgPtr> cfg_vec;
-  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
-  ASSERT_EQ(0, ret);
-  auto pipeline_ptr = std::make_shared<Pipeline>();
-  ASSERT_NE(nullptr, pipeline_ptr);
-  std::vector<uint32_t> input_size;
-  input_size.push_back(kInputUnit * sizeof(uint8_t));
-  pipeline_ptr->InitPipeline(cfg_vec, (char **)&img.data, input_size);
-  pipeline_ptr->RunPipeline();
+//  std::string model_cfg_file = "models.cfg";
+//  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+//  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+//  ASSERT_EQ(0, ret);
+//  auto pipeline_ptr = std::make_shared<Pipeline>();
+//  ASSERT_NE(nullptr, pipeline_ptr);
+//  std::vector<uint32_t> input_size;
+//  input_size.push_back(kInputUnit * sizeof(uint8_t));
+//  pipeline_ptr->InitPipeline(cfg_vec, (char **)&img.data, input_size);
+//  pipeline_ptr->RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }

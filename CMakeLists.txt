@@ -28,7 +28,8 @@ if (BUILD_TESTCASE)
 endif()
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/Package.cmake)
 
-#include_directories(${OPENCV_INCLUDE_DIR})
+
+
 #add_executable(main "")
-#add_dependencies(main ${third_party_deps})
 #target_sources(main PRIVATE main.cc)
+

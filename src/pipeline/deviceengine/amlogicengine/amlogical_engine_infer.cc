@@ -13,7 +13,8 @@
 #include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_pre_process.h"
 
 namespace device {
-AmlogicEngine::~AmlogicEngine() {}
+AmlogicEngine::~AmlogicEngine() {
+}
 
 int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
   REPORT_ERROR_IF_NULL(cur_context_ptr);
@@ -49,7 +50,7 @@ int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
 int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   vsi_status status = VSI_FAILURE;
   vx_uint64 tms_start, tms_end, ms_val;
-
+  LOG(INFO) << "Before Run Yolo pre";
   PreProcess(cur_context_ptr);
   tms_start = get_perf_count();
   status = vsi_nn_RunGraph(self_graph_);
@@ -77,20 +78,18 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
                << "has error mean or norm amount";
     return -1;
   }
-  vnn_SetMeanandNorm(model_cfg_->model_mean_[0], model_cfg_->model_mean_[1],
-                     model_cfg_->model_mean_[2], model_cfg_->model_norm_[0]);
-  if (model_cfg_->data_format_ == "RGB") {
-    vnn_SetChannelOrder(0, 1, 2);
-  } else if (model_cfg_->data_format_ == "BGR") {
-    vnn_SetChannelOrder(2, 1, 0);
-  } else {
-    LOG(ERROR) << "Amlogical model preprocess can't support data fomat: "
-               << model_cfg_->data_format_;
-  }
 
-  float *out = nullptr;
-  status = vnn_PreProcessPixels(self_graph_,
-                                cur_context_ptr->dataflow_[0].data(), out);
+  vsi_nn_tensor_t *tensor;
+  tensor = vsi_nn_GetTensor( self_graph_, self_graph_->input.tensors[0] );
+  uint32_t sz = vsi_nn_GetElementNum(tensor);
+  LOG(ERROR) << "Preprocess sz." << sz;
+  uint32_t stride = vsi_nn_TypeGetBytes(tensor->attr.dtype.vx_type);
+  LOG(ERROR) << "Preprocess stride" << stride;
+  uint8_t *dtype_data = (uint8_t *)malloc(stride * sz * sizeof(uint8_t));
+  float *input_data = (float *)malloc(sz * sizeof(float));
+  float *transform_data = (float *)malloc(sz * sizeof(float));
+  status = vnn_PreProcessByPixels(self_graph_, cur_context_ptr->dataflow_[0].data(),
+                                  input_data, transform_data, dtype_data);
 
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";
@@ -100,6 +99,7 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
             << "preprocess cost: " << ms_val << "ms";
+
   return 0;
 }
 
@@ -109,30 +109,107 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
   tms_start = get_perf_count();
   uint32_t out_num_graph = self_graph_->output.num;
   cur_context_ptr->out_shape_.resize(out_num_graph);
-  for (uint32_t idx = 0; idx < out_num_graph; ++idx) {
-    vsi_nn_tensor_t *out_tensor_t =
-      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[idx]);
-    for (auto dim : out_tensor_t->attr.size) {
-      cur_context_ptr->out_shape_[idx].emplace_back(dim);
-    }
-    uint8_t *out_tensor_data =
-      (uint8_t *)vsi_nn_ConvertTensorToData(self_graph_, out_tensor_t);
-    uint32_t tensor_stride =
-      ::vsi_nn_TypeGetBytes(out_tensor_t->attr.dtype.vx_type);
+  for (int i = 0; i < out_num_graph; i++) {
+    uint32_t sz = 1, stride;
+    uint8_t *tensor_data = NULL;
 
-    auto iter_begin = cur_context_ptr->out_dataflow_[idx].begin();
-    auto iter_end = cur_context_ptr->out_dataflow_[idx].end();
-    std::for_each(iter_begin, iter_end, [&](float &iter) {
-      vsi_status status =
-        vsi_nn_DtypeToFloat32(&(out_tensor_data[tensor_stride * idx]), &(iter),
-                              &out_tensor_t->attr.dtype);
-      if (status == VSI_FAILURE) {
-        LOG(ERROR) << "vsi_nn_DtypeToFloat32 run faied !";
-        vsi_nn_Free(out_tensor_data);
+        vsi_nn_tensor_t *out_tensor_t =
+      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[i]);
+    for (auto dim : out_tensor_t->attr.size) {
+      cur_context_ptr->out_shape_[i].emplace_back(dim);
+    }
+    float *buffer = cur_context_ptr->out_dataflow_[i].data();
+    float scale;
+    int32_t zero_point;
+    float fl;
+    vsi_nn_tensor_t *o_tensor =
+      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[i]);
+
+    if (o_tensor->attr.dtype.vx_type == VSI_NN_TYPE_UINT8) {
+      scale = o_tensor->attr.dtype.scale;
+      zero_point = o_tensor->attr.dtype.zero_point;
+    } else {
+      fl = pow(2., -o_tensor->attr.dtype.fl);
+    }
+
+    for (int j = 0; j < o_tensor->attr.dim_num; j++) {
+      sz *= o_tensor->attr.size[j];
+    }
+    stride = vsi_nn_TypeGetBytes(o_tensor->attr.dtype.vx_type);
+    tensor_data = (uint8_t *)vsi_nn_ConvertTensorToData(self_graph_, o_tensor);
+
+    if (buffer == NULL) {
+      LOG(INFO) << "break";
+      break;
+    }
+    for (int j = 0; j < sz; j++) {
+      switch (o_tensor->attr.dtype.vx_type) {
+        case VSI_NN_TYPE_UINT8:
+          buffer[j] =
+            (*(uint8_t *)&tensor_data[stride * j] - zero_point) * scale;
+          break;
+        case VSI_NN_TYPE_INT8:
+          buffer[j] = *(int8_t *)&tensor_data[stride * j] * fl;
+          break;
+        case VSI_NN_TYPE_INT16:
+          buffer[j] = *(int16_t *)&tensor_data[stride * j] * fl;
+          break;
+        case VSI_NN_TYPE_FLOAT16: {
+          vx_int16 data = *(vx_int16 *)(&tensor_data[stride * j]);
+          vx_int32 t1 = data & 0x7FFF;
+          vx_int32 t2 = data & 0x8000;
+          vx_int32 t3 = data & 0x7C00;
+          vx_float32 out;
+
+          t1 <<= 13;
+          t2 <<= 16;
+
+          t1 += 0x38000000;
+          t1 = (t3 == 0 ? 0 : t1);
+          t1 |= t2;
+          *((uint32_t *)&out) = t1;
+
+          buffer[j] = out;
+          break;
+        }
+        case VSI_NN_TYPE_FLOAT32:
+          buffer[j] = *(float *)(&tensor_data[stride * j]);
+          break;
+        default:
+          break;
       }
-    });
-    vsi_nn_Free(out_tensor_data);
+    }
+    if (tensor_data) {
+      free(tensor_data);
+    }
   }
+
+//  for (uint32_t idx = 0; idx < out_num_graph; ++idx) {
+//    vsi_nn_tensor_t *out_tensor_t =
+//      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[idx]);
+//    for (auto dim : out_tensor_t->attr.size) {
+//      cur_context_ptr->out_shape_[idx].emplace_back(dim);
+//    }
+//    uint8_t *out_tensor_data =
+//      (uint8_t *)vsi_nn_ConvertTensorToData(self_graph_, out_tensor_t);
+//    uint32_t tensor_stride =
+//      ::vsi_nn_TypeGetBytes(out_tensor_t->attr.dtype.vx_type);
+//
+//    auto iter_begin = cur_context_ptr->out_dataflow_[idx].begin();
+//    auto iter_end = cur_context_ptr->out_dataflow_[idx].end();
+//    uint32_t iter_poisition = 0;
+//    std::for_each(iter_begin, iter_end, [&](float &iter) {
+//      vsi_status status =
+//        vsi_nn_DtypeToFloat32(&(out_tensor_data[tensor_stride * iter_poisition]), &(iter),
+//                              &out_tensor_t->attr.dtype);
+//      iter_poisition++;
+//      if (status == VSI_FAILURE) {
+//        LOG(ERROR) << "vsi_nn_DtypeToFloat32 run faied !";
+//        vsi_nn_Free(out_tensor_data);
+//      }
+//    });
+//    vsi_nn_Free(out_tensor_data);
+//  }
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_

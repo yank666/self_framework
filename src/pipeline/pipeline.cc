@@ -5,6 +5,7 @@
 #include "glog/logging.h"
 #include "src/utils/base.h"
 #include "stage_register.h"
+#include "src/utils/errorcode.h"
 #include "deviceengine/device_register.h"
 
 namespace pipeline {
@@ -73,15 +74,7 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
   for (const auto &model_cfg : model_cfgs) {
     RegisterStage(model_cfg);
   }
-  for (size_t i = 0; i < stages_[0].size(); ++i) {
-    std::string stage_name = stages_[0][i]->GetModelName();
-    auto stage_context_ptr = GetStageContextbyName(stage_name);
-    if (stage_context_ptr == nullptr) {
-      return false;
-    }
-    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
-           input_size[i]);
-  }
+  is_ready_.store(true);
   return true;
 }
 
@@ -98,7 +91,25 @@ void Pipeline::RunPipeline() {
                   }
                   return true;
                 });
+
+  is_ready_.store(true);
 }
+
+bool Pipeline::PushDatatoPipeline(char **input_data,
+                                  const std::vector<uint32_t> &input_size) {
+  for (size_t i = 0; i < stages_[0].size(); ++i) {
+    std::string stage_name = stages_[0][i]->GetModelName();
+    auto stage_context_ptr = GetStageContextbyName(stage_name);
+    if (stage_context_ptr == nullptr) {
+      return false;
+    }
+    memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
+           input_size[i]);
+  }
+  is_ready_.store(false);
+  return RET_OK;
+}
+
 
 contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name) {
   auto iter = process_context_.find(stage_name);

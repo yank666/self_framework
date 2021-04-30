@@ -72,5 +72,18 @@ TEST_F(DecoratorUT, yolodecorator) {
 }
 
 TEST_F(DecoratorUT, imread) {
-
+  uint32_t kInputUnit = 1 * 3 * 384 * 672;
+  cv::Mat img = cv::imread("input.jpg",1);
+  ASSERT_NE(img.empty(), true);
+  std::string model_cfg_file = "models.cfg";
+  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  ASSERT_EQ(0, ret);
+  auto pipeline_ptr = std::make_shared<Pipeline>();
+  ASSERT_NE(nullptr, pipeline_ptr);
+  std::vector<uint32_t> input_size;
+  input_size.push_back(kInputUnit * sizeof(uint8_t));
+  pipeline_ptr->InitPipeline(cfg_vec, (char **)&img.data, input_size);
+  pipeline_ptr->RunPipeline();
+  LOG(INFO) << "Run DecoratorUT.imread SUCCESS!";
 }

@@ -2,8 +2,8 @@ include (ExternalProject)
 set(EXTERNAL_LIB_CMAKE_CXX_COMPILER "${CMAKE_CXX_COMPILER} -Werror")
 
 if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
-    set(EXTRA_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=$ENV{ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_NATIVE_API_LEVEL=28
-            -DANDROID_NDK=$ENV{ANDROID_NDK} -DANDROID_ABI=armeabi-v7a -DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang
+    set(EXTRA_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_NATIVE_API_LEVEL=android-28
+            -DANDROID_NDK=${ANDROID_NDK} -DANDROID_ABI=armeabi-v7a -DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang
             -DANDROID_STL=c++_shared)
 else()
     set(EXTRA_CMAKE_ARGS "")

@@ -35,7 +35,6 @@ int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     pipeline::ModelCfgPtr model_ptr = std::make_shared<pipeline::ModelConfig>();
     ParserModel::InferConfigParameter model_param =
       proto_params.infer_config(i);
-
     model_ptr->model_name_ = model_param.name();
     model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_position_ = model_param.model_position();
