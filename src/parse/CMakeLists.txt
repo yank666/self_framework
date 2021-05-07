@@ -13,4 +13,4 @@ file(GLOB PARSE_VIDEO_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         )
 add_library(parsevideo SHARED ${PARSE_VIDEO_SRC_LIST})
 add_dependencies(parsevideo External_opencv)
-target_link_libraries(parsevideo glog::glog)
+target_link_libraries(parsevideo glog::glog ${OPENCV_LIBS})

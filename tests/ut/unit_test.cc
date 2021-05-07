@@ -7,13 +7,14 @@
 #include "src/pipeline/deviceengine/abstractengine.h"
 #include "src/pipeline/decorator_stage/yolo_decorator_stage.h"
 #include "opencv2/opencv.hpp"
+
 using namespace pipeline;
 using namespace device;
 
-class DecoratorUT : public testing::Test {
+class UT : public testing::Test {
  public:
-  DecoratorUT() = default;
-  ~DecoratorUT() = default;
+  UT() = default;
+  ~UT() = default;
   static void SetUpTestCase(){};
   static void TearDownTestCase(){};
   char *ReadFromFile(std::string file_name, size_t memlen);
@@ -22,7 +23,7 @@ class DecoratorUT : public testing::Test {
   virtual void TearDown(){};
 };
 
-char *DecoratorUT::ReadFromFile(std::string file_name, size_t memlen) {
+char *UT::ReadFromFile(std::string file_name, size_t memlen) {
   std::ifstream fin(file_name, std::ios::binary);
   if (!fin.good()) {
     LOG(ERROR) << "file: " << file_name << " is not exist";
@@ -52,7 +53,7 @@ char *DecoratorUT::ReadFromFile(std::string file_name, size_t memlen) {
   return buf;
 }
 
-TEST_F(DecoratorUT, yolodecorator) {
+TEST_F(UT, yolodecorator) {
   FLAGS_minloglevel = 0;
   char *in = nullptr;
   const uint32_t kInputSize = 333396;
@@ -71,7 +72,7 @@ TEST_F(DecoratorUT, yolodecorator) {
   LOG(INFO) << "Run SUCCESS!";
 }
 
-TEST_F(DecoratorUT, imread) {
+TEST_F(UT, parseconfig) {
   uint32_t kInputUnit = 1 * 3 * 384 * 672;
   cv::Mat img = cv::imread("input.jpg",1);
   ASSERT_NE(img.empty(), true);
@@ -79,11 +80,4 @@ TEST_F(DecoratorUT, imread) {
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
   ASSERT_EQ(0, ret);
-  auto pipeline_ptr = std::make_shared<Pipeline>();
-  ASSERT_NE(nullptr, pipeline_ptr);
-  std::vector<uint32_t> input_size;
-  input_size.push_back(kInputUnit * sizeof(uint8_t));
-  pipeline_ptr->InitPipeline(cfg_vec, (char **)&img.data, input_size);
-  pipeline_ptr->RunPipeline();
-  LOG(INFO) << "Run DecoratorUT.imread SUCCESS!";
 }

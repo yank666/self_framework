@@ -18,6 +18,7 @@ constexpr int RET_SUCCESS_EXIT = -5;      /**< No error but exit. */
 constexpr int RET_MEMORY_FAILED = -6;     /**< Fail to create memory. */
 constexpr int RET_NOT_SUPPORT = -7;       /**< Fail to support. */
 constexpr int RET_THREAD_POOL_ERROR = -8; /**< Error occur in thread pool. */
+constexpr int RET_PARSE_ERROR = -9; /**< Error occur in thread pool. */
 
 /* Executor error code, range: [-100,-200) */
 

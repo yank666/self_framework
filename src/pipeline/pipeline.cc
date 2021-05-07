@@ -63,9 +63,7 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
   return true;
 }
 
-bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                            char **input_data,
-                            const std::vector<uint32_t> &input_size) {
+bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs) {
   if (model_cfgs.empty()) {
     LOG(ERROR) << "Pipeline init failed, model cfgs is emtpy!";
     return false;

@@ -86,8 +86,7 @@ class Pipeline {
  public:
   Pipeline() = default;
   ~Pipeline() = default;
-  bool InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs,
-                    char **input_data, const std::vector<uint32_t> &input_size);
+  bool InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs);
   void RunPipeline();
   bool PushDatatoPipeline(char **input_data, const std::vector<uint32_t> &input_size);
   contextPtr GetStageContextbyName(const std::string &stage_name);

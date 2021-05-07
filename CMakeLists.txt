@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(Self_Architecture)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread")
 
 set(FRAME_DEPENDENCIES "")
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
@@ -27,7 +27,6 @@ if (BUILD_TESTCASE)
     add_subdirectory(tests)
 endif()
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/Package.cmake)
-
 
 
 #add_executable(main "")
