@@ -15,7 +15,11 @@
 
 namespace pipeline {
 
-const float kThreshold = 0.3f;
+const float kConfThreshold = 0.3f;
+const float kIouThreshold = 0.5f;
+const float kBoxThreshold = 0.3f;
+
+
 
 enum YoloInputDesc : int {
   kInb = 1,
@@ -83,8 +87,8 @@ inline float bbox_iou(const YoloV5Box &box1, const YoloV5Box &box2) {
   float w = std::max<float>(0, xx2 - xx1);
   float h = std::max<float>(0, yy2 - yy1);
   float area = w * h;
-  float combine_area = (box1.x2 - box1.x1) * (box1.y2 - box1.y2) +
-                       (box2.x2 - box2.x1) * (box2.y2 - box2.y2);
+  float combine_area = (box1.x2 - box1.x1) * (box1.y2 - box1.y1) +
+                       (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
   if (std::fabs(combine_area - area) <= FLT_EPSILON) {
     return 0;
   }
@@ -202,7 +206,7 @@ void YoloDerocatestage::DecodingOutput(float **inputarray,
               sigmoid(*(inputarray[i] + idx + start));
           }
 
-          conf = *(inputarray[i] + idx + kConfiIdx) >= 0.3;
+          conf = *(inputarray[i] + idx + kConfiIdx) >= kConfThreshold;
 
           if (conf) {
             output_y[i].insert(output_y[i].end(), inputarray[i] + idx,
@@ -349,7 +353,7 @@ void YoloDerocatestage::ObtainBoxAndScore(
 
 void YoloDerocatestage::NMSProcess(const std::vector<YoloV5BodyInfo> &vec_boxes,
                                    std::vector<YoloV5BodyInfo> *bboxes_nms) {
-  if (kThreshold < 0.0f) {
+  if (kIouThreshold < 0.0f) {
     LOG(ERROR) << "threshold in NMSProcess is wrong.";
   }
   std::vector<YoloV5BodyInfo> bboxes(vec_boxes);
@@ -392,7 +396,8 @@ void YoloDerocatestage::NMSProcess(const std::vector<YoloV5BodyInfo> &vec_boxes,
 
       if (static_cast<float>(area_intersect) /
             (area1 + area2 - area_intersect) >
-          kThreshold) {
+          kIouThreshold) {
+
         mask_merged[i] = 1;
       }
     }
@@ -540,7 +545,20 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
 
   return associated_detections;
 }
-
+void YoloDerocatestage::FilterBoxByScore(
+  std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec) {
+  std::for_each(nms_boxes_vec->begin(), nms_boxes_vec->end(),
+                [](std::vector<YoloV5BodyInfo> &vec_info) {
+    auto iter = vec_info.begin();
+    while(iter != vec_info.end()) {
+      if (iter->score < kBoxThreshold) {
+        iter = vec_info.erase(iter);
+      } else {
+        iter++;
+      }
+    }
+  });
+}
 bool YoloDerocatestage::FindAssociationPairs(
   Eigen::MatrixXf &cost_matrix, float matching_gate,
   std::unordered_map<size_t, size_t> &matched_pairs,
@@ -610,6 +628,7 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
             << *(inputarray[0] + 2);
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
+  FilterBoxByScore(&nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
 
   ////////////////////////////////////////////////////////////

@@ -62,6 +62,7 @@ class YoloDerocatestage : public DecoratorStage {
                             std::unordered_map<size_t, size_t> &matched_pairs,
                             std::vector<size_t> &orphan_row_items,
                             std::vector<size_t> &orphan_col_items);
+  void FilterBoxByScore(std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec);
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_{nullptr};
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_np_{nullptr};
 };
