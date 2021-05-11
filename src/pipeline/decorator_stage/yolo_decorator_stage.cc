@@ -431,11 +431,10 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     PersonInfo person_info;
     person_info.label = 0;
     person_info.attrs = nms_boxes->at(0)[body_i].attrs;
-    person_info.body.conf = nms_boxes->at(0)[body_i].score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].score;
-
     person_info.body = nms_boxes->at(0)[body_i].box;
     person_info.head = nms_boxes->at(1)[head_j].box;
+    person_info.body.conf = nms_boxes->at(0)[body_i].score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
 
     associated_detections->push_back(person_info);
   }
@@ -462,7 +461,6 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
       person_info.head.x2 = person_info.body.x2;
       person_info.head.y2 = person_info.body.y2 / 3;
     }
-
     associated_detections->push_back(person_info);
   }
 
@@ -471,11 +469,11 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     PersonInfo person_info;
     person_info.label = 0;
     person_info.attrs = nms_boxes->at(1)[head_j].attrs;
-    person_info.body.conf = nms_boxes->at(1)[head_j].related_score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].score;
-
     person_info.body = nms_boxes->at(1)[head_j].related_box;
     person_info.head = nms_boxes->at(1)[head_j].box;
+
+    person_info.body.conf = nms_boxes->at(1)[head_j].related_score;
+    person_info.head.conf = nms_boxes->at(1)[head_j].score;
 
     associated_detections->push_back(person_info);
   }
