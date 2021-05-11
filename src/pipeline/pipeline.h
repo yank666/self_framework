@@ -23,14 +23,14 @@ using AbstractStagePtr = std::shared_ptr<AbstractStage>;
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
 using ProcessContextMap = std::unordered_map<std::string, ProcessContext>;
 
-enum kEngineType : int {
-  begintype = 0,
-  trttype = 1,
-  amlogicaltype = 2,
-  endtype = 3
-};
-const std::unordered_map<std::string, kEngineType> kEngineTypeSwitch = {
-  {"trt", trttype}, {"nb", amlogicaltype}};
+// enum kEngineType : int {
+//  begintype = 0,
+//  trttype = 1,
+//  amlogicaltype = 2,
+//  endtype = 3
+//};
+// const std::unordered_map<std::string, kEngineType> kEngineTypeSwitch = {
+//  {"trt", trttype}, {"nb", amlogicaltype}};
 
 class AbstractStage {
  public:
@@ -42,11 +42,16 @@ class AbstractStage {
   ~AbstractStage() = default;
   virtual bool RunStage(const contextPtr &conext_ptr) = 0;
   bool CreateContextFromCfg();
-  const std::string GetModelName() { return stage_name_; }
+  std::string GetModelName() { return stage_name_; }
   ModelCfgPtr GetModelCfg() { return stage_cfg_; };
+  void ConnectTailStage(std::string stage_name) {
+    tail_stages.push_back(stage_name);
+  };
+  const std::vector<std::string> &GetTailStage() { return tail_stages; };
 
  protected:
   std::string stage_name_;
+  std::vector<std::string> tail_stages;
   ModelCfgPtr stage_cfg_;
 };
 
@@ -88,9 +93,13 @@ class Pipeline {
   ~Pipeline() = default;
   bool InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs);
   void RunPipeline();
-  bool PushDatatoPipeline(char **input_data, const std::vector<uint32_t> &input_size);
+  bool PushDatatoPipeline(char **input_data,
+                          const std::vector<uint32_t> &input_size,
+                          uint32_t input_width, uint32_t input_height);
   contextPtr GetStageContextbyName(const std::string &stage_name);
-  bool GetStatusofPipeline() {return is_ready_.load();}
+  bool GetStatusofPipeline() { return is_ready_.load(); }
+  void DeliveryContext(const AbstractStagePtr cur_staga,
+                       const contextPtr cur_context);
 
  protected:
   void RegisterStage(const ModelCfgPtr &model_cfg);
@@ -101,7 +110,7 @@ class Pipeline {
   const DeviceStagePtr GetStage(const uint32_t &poisiton);
   const DeviceStagePtr FindStage(const std::string &stage_name);
 
-  std::atomic<bool>  is_ready_{false};
+  std::atomic<bool> is_ready_{false};
   std::vector<std::vector<AbstractStagePtr>> stages_;
   ProcessContextMap process_context_;
 };

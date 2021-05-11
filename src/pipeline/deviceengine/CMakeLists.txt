@@ -23,7 +23,7 @@ endif()
 
 add_library(device_utile SHARED ${DEVICE_ENGINE_SRC_LIST})
 add_dependencies(device_utile ${third_party_deps})
-target_link_libraries(device_utile glog::glog)
+target_link_libraries(device_utile glog::glog ${OPENCV_LIBS})
 if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
     target_link_directories(device_utile PUBLIC ${PROJECT_SOURCE_DIR}/thirdparty/ddk/lib/armeabi-v7a)
     target_link_libraries(device_utile jpeg_amlogical_common ovxlib)

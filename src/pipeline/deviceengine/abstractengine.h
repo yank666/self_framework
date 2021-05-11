@@ -6,6 +6,8 @@
 #define SELF_ARCHITECTURE_ABSTRACTENGINE_H
 #include "src/parse/parse_config.h"
 #include <string>
+#include "opencv2/opencv.hpp"
+
 namespace device {
 using ModelCfgPtr = pipeline::ModelCfgPtr;
 
@@ -13,13 +15,18 @@ class Context {
  public:
   Context() = default;
   ~Context() = default;
-
   uint32_t channel_;
   std::string name_;
-  std::vector<uint32_t> datasize_;
+  uint32_t input_w;
+  uint32_t input_h;
+  std::vector<std::vector<char>> ori_data;
   std::vector<std::vector<float>> dataflow_;
+  std::vector<std::vector<uint32_t>> in_shape_;
   std::vector<std::vector<float>> out_dataflow_;
   std::vector<std::vector<uint32_t>> out_shape_;
+
+  void TransmitContext(const std::shared_ptr<Context> dst_contest);
+  void CopyContext(const std::shared_ptr<Context> dst_contest);
 };
 using contextPtr = std::shared_ptr<Context>;
 

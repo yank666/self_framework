@@ -3,7 +3,7 @@
 //
 
 #include "common_test.h"
-
+#include "glog/logging.h"
 void CommonTest::SetUpTestCase() {}
 
 void CommonTest::TearDownTestCase() {}

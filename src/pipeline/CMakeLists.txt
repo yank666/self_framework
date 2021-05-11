@@ -1,3 +1,5 @@
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 file(GLOB_RECURSE PIPELINE_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "pipeline.cc"
         "decorator_stage/*.cc"

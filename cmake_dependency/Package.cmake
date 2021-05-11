@@ -14,6 +14,8 @@ install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/libpipeline.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparseconfig.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
+install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparsevideo.so
+        DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/deviceengine/libdevice_utile.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 

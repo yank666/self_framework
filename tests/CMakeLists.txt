@@ -1,7 +1,8 @@
-
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB TEST_SOURCE_FILE  RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "test_main.cc"
+        "common_test.cc"
         )
 
 file(GLOB_RECURSE UT_SOURCE_FILE ${TEST_DIR}/ut/*.cc)

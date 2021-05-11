@@ -409,11 +409,6 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
   size_t num_face = nms_boxes->at(2).size();
   size_t num_package = nms_boxes->at(3).size();
 
-  LOG(INFO) << "num_body size is : " << num_body << " ";
-  LOG(INFO) << "num_head size is : " << num_head << " ";
-  LOG(INFO) << "num_face size is : " << num_face << " ";
-  LOG(INFO) << "num_package size is : " << num_package << " ";
-
   Eigen::MatrixXf Cost_body2head = Eigen::MatrixXf::Zero(num_body, num_head);
   for (size_t i = 0; i < num_body; ++i) {
     for (size_t j = 0; j < num_head; ++j) {
@@ -545,18 +540,6 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     }
   }
 
-  // 4.0 计算body_quality
-  //  for (int i = 0; i < associated_detections->size(); i++)
-  //  {
-  //    std::vector<float> attr = associated_detections->at(i).attrs;
-  //    int orientation = int(attr[0]);
-  //    float visibile = attr[3];
-  //    float occlusion = attr[5];
-  //    float resoluton = attr[7];
-  //
-  //    float quality = 1.0f - (visibile * 0.4 + occlusion * 0.4 + resoluton *
-  //    0.1); associated_detections[i].quality = quality;
-  //  }
   return associated_detections;
 }
 
@@ -631,9 +614,16 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   ObtainBoxAndScore(output, &nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
 
-  LOG(INFO) << "outputs_vecs size is : " << outputs_vecs.size() << " "
-            << outputs_vecs[0].size();
-  LOG(INFO) << "associate_vec is:" << associate_vec->size();
+  ////////////////////////////////////////////////////////////
+  auto person = associate_vec->at(0);
+  conext_ptr->out_dataflow_.clear();
+  conext_ptr->out_dataflow_.resize(1);
+  conext_ptr->out_dataflow_[0].resize(sizeof(PersonInfo));
+  std::memcpy(conext_ptr->out_dataflow_[0].data(), &person, sizeof(PersonInfo));
+  conext_ptr->out_shape_.clear();
+  conext_ptr->out_shape_.resize(1);
+  conext_ptr->out_shape_[0].push_back(sizeof(PersonInfo));
+  ///////////////////////////////////////////////////////////
   LOG(INFO) << "Run Yolo postdecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;

@@ -22,16 +22,23 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
   DecorStagePtr exec_stage_ptr =
     DeviceInferenceFactory::GetInstance().GetDeviceInference(
       model_inference_ptr->GetModelName());
+
+  uint32_t current_model_pos = model_cfg->model_position_;
+  std::string cur_model_name = model_cfg->model_name_;
   if (exec_stage_ptr != nullptr) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
-    stages_[model_cfg->model_position_].push_back(exec_stage_ptr);
+    stages_[current_model_pos].push_back(exec_stage_ptr);
     process_context_.insert(std::make_pair(
-      model_cfg->model_name_, std::make_pair(exec_stage_ptr, stage_context)));
+      cur_model_name, std::make_pair(exec_stage_ptr, stage_context)));
   } else {
-    stages_[model_cfg->model_position_].push_back(model_inference_ptr);
-    process_context_.insert(
-      std::make_pair(model_cfg->model_name_,
-                     std::make_pair(model_inference_ptr, stage_context)));
+    stages_[current_model_pos].push_back(model_inference_ptr);
+    process_context_.insert(std::make_pair(
+      cur_model_name, std::make_pair(model_inference_ptr, stage_context)));
+  }
+  if (current_model_pos != 0) {
+    for (auto stage : stages_[current_model_pos - 1]) {
+      stage->ConnectTailStage(cur_model_name);
+    }
   }
 }
 
@@ -42,24 +49,19 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
   cur_context_ptr->name_ = cur_model_cfg->model_name_;
 
   uint32_t input_cnt = cur_model_cfg->model_inshape_.size();
-  cur_context_ptr->datasize_.resize(input_cnt);
+  cur_context_ptr->in_shape_.resize(input_cnt);
   cur_context_ptr->dataflow_.resize(input_cnt);
   uint32_t input_sum = 1;
   for (auto &inshape : cur_model_cfg->model_inshape_) {
     uint32_t input_sum_temp = std::accumulate(
       std::begin(inshape), std::end(inshape), 1, std::multiplies<uint32_t>());
     input_sum *= input_sum_temp;
-    cur_context_ptr->datasize_[datainput] = input_sum;
     cur_context_ptr->dataflow_[datainput].resize(input_sum);
+    std::vector<uint32_t> temp_vec;
+    std::for_each(inshape.begin(), inshape.end(),
+                  [&](const uint32_t &dim) { temp_vec.push_back(dim); });
+    cur_context_ptr->in_shape_.push_back(temp_vec);
   }
-
-  //  uint32_t output_sum = 1;
-  //  for (auto &outshape : cur_model_cfg->model_outshape_) {
-  //    uint32_t output_sum_temp = std::accumulate(
-  //      std::begin(outshape), std::end(outshape), 1,
-  //      std::multiplies<uint32_t>());
-  //    output_sum *= output_sum_temp;
-  //  }
   return true;
 }
 
@@ -76,6 +78,20 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs) {
   return true;
 }
 
+void Pipeline::DeliveryContext(const AbstractStagePtr cur_staga,
+                               const contextPtr cur_context) {
+  REPORT_EXCEPTION_IF_NULL(cur_staga);
+  REPORT_EXCEPTION_IF_NULL(cur_context);
+  auto tail_stage_name = cur_staga->GetTailStage();
+  if (tail_stage_name.empty()) {
+    return;
+  }
+  for (auto stage_name : tail_stage_name) {
+    auto tail_context = GetStageContextbyName(stage_name);
+    cur_context->TransmitContext(tail_context);
+  }
+}
+
 void Pipeline::RunPipeline() {
   std::for_each(stages_.begin(), stages_.end(),
                 [&](const std::vector<AbstractStagePtr> &stage_vec) {
@@ -86,6 +102,7 @@ void Pipeline::RunPipeline() {
                       GetStageContextbyName(stage->GetModelName());
                     REPORT_ERROR_IF_NULL(cur_context_ptr);
                     stage->RunStage(cur_context_ptr);
+                    DeliveryContext(stage, cur_context_ptr);
                   }
                   return true;
                 });
@@ -94,20 +111,25 @@ void Pipeline::RunPipeline() {
 }
 
 bool Pipeline::PushDatatoPipeline(char **input_data,
-                                  const std::vector<uint32_t> &input_size) {
+                                  const std::vector<uint32_t> &input_size,
+                                  uint32_t input_width, uint32_t input_height) {
   for (size_t i = 0; i < stages_[0].size(); ++i) {
     std::string stage_name = stages_[0][i]->GetModelName();
     auto stage_context_ptr = GetStageContextbyName(stage_name);
     if (stage_context_ptr == nullptr) {
       return false;
     }
+    stage_context_ptr->input_w = input_width;
+    stage_context_ptr->input_h = input_height;
+    stage_context_ptr->ori_data.resize(stages_[0].size());
+    stage_context_ptr->ori_data[i].resize(input_size[i]);
+    memcpy(stage_context_ptr->ori_data[0].data(), input_data[i], input_size[i]);
     memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
            input_size[i]);
   }
   is_ready_.store(false);
   return RET_OK;
 }
-
 
 contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name) {
   auto iter = process_context_.find(stage_name);
@@ -122,6 +144,7 @@ DeviceStage::DeviceStage(const ModelCfgPtr &model_cfg)
     : AbstractStage(model_cfg) {
   engine_ = device::DeviceEngineFactory::GetInstance().GetDeviceInference(
     model_cfg->model_name_, model_cfg->model_type_);
+  REPORT_EXCEPTION_IF_NULL(engine_);
   engine_->SetModelCfg(model_cfg);
 };
 

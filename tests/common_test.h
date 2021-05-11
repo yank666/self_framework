@@ -24,7 +24,10 @@ class CommonTest : public testing::Test {
 
   template <typename T>
   void PrintData(const std::string &name, T *output_data, int size);
-  static int CompareOutputData(const T *output_data, const T *correct_data, int size, float err_bound = 1e-4);
-}
+
+  template <typename T>
+  static int CompareOutputData(const T *output_data, const T *correct_data,
+                               int size, float err_bound = 1e-4);
+};
 
 #endif  // SELF_ARCHITECTURE_COMMON_TEST_H
