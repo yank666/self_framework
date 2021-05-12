@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cfloat>
+#include <iterator>
 #include "glog/logging.h"
 #include "src/utils/base.h"
 #include "src/pipeline/stage_register.h"
@@ -18,8 +19,6 @@ namespace pipeline {
 const float kConfThreshold = 0.3f;
 const float kIouThreshold = 0.5f;
 const float kBoxThreshold = 0.3f;
-
-
 
 enum YoloInputDesc : int {
   kInb = 1,
@@ -342,9 +341,7 @@ void YoloDerocatestage::ObtainBoxAndScore(
 
     vec_boxes[max_score_idx - 1].push_back(body_info);
   }
-  LOG(ERROR) << "Before NMS: " << vec_boxes[0].size() << " "
-             << vec_boxes[1].size() << " " << vec_boxes[2].size() << " "
-             << vec_boxes[3].size() << " ";
+
   nms_boxes_vec->resize(kClassifyNum);
   for (size_t i = 0; i < kClassifyNum; ++i) {
     NMSProcess(vec_boxes[i], &(nms_boxes_vec->at(i)));
@@ -397,7 +394,6 @@ void YoloDerocatestage::NMSProcess(const std::vector<YoloV5BodyInfo> &vec_boxes,
       if (static_cast<float>(area_intersect) /
             (area1 + area2 - area_intersect) >
           kIouThreshold) {
-
         mask_merged[i] = 1;
       }
     }
@@ -549,15 +545,15 @@ void YoloDerocatestage::FilterBoxByScore(
   std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec) {
   std::for_each(nms_boxes_vec->begin(), nms_boxes_vec->end(),
                 [](std::vector<YoloV5BodyInfo> &vec_info) {
-    auto iter = vec_info.begin();
-    while(iter != vec_info.end()) {
-      if (iter->score < kBoxThreshold) {
-        iter = vec_info.erase(iter);
-      } else {
-        iter++;
-      }
-    }
-  });
+                  auto iter = vec_info.begin();
+                  while (iter != vec_info.end()) {
+                    if (iter->score < kBoxThreshold) {
+                      iter = vec_info.erase(iter);
+                    } else {
+                      iter++;
+                    }
+                  }
+                });
 }
 bool YoloDerocatestage::FindAssociationPairs(
   Eigen::MatrixXf &cost_matrix, float matching_gate,
@@ -624,23 +620,28 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
   inputarray[0] = outputs_vecs[0].data();
   inputarray[1] = outputs_vecs[0].data() + 3 * 4032 * kOutUnit;
   inputarray[2] = outputs_vecs[0].data() + 3 * (4032 + 1008) * kOutUnit;
-  LOG(INFO) << *inputarray[0] << " " << *(inputarray[0] + 1) << " "
-            << *(inputarray[0] + 2);
+
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
   FilterBoxByScore(&nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
-
-  ////////////////////////////////////////////////////////////
-  auto person = associate_vec->at(0);
+  associate_vec->push_back(associate_vec->at(0));
   conext_ptr->out_dataflow_.clear();
-  conext_ptr->out_dataflow_.resize(1);
-  conext_ptr->out_dataflow_[0].resize(sizeof(PersonInfo));
-  std::memcpy(conext_ptr->out_dataflow_[0].data(), &person, sizeof(PersonInfo));
   conext_ptr->out_shape_.clear();
-  conext_ptr->out_shape_.resize(1);
-  conext_ptr->out_shape_[0].push_back(sizeof(PersonInfo));
-  ///////////////////////////////////////////////////////////
+
+  using it_type = decltype(associate_vec->begin());
+  std::transform(associate_vec->begin(), associate_vec->end(),
+                 std::back_inserter(conext_ptr->out_dataflow_),
+                 [&](PersonInfo &info) {
+                   std::vector<float> flow;
+                   std::vector<uint32_t> shape;
+                   shape.push_back(sizeof(PersonInfo));
+                   conext_ptr->out_shape_.push_back(shape);
+                   flow.resize(sizeof(PersonInfo));
+                   std::memcpy(flow.data(), &info, sizeof(PersonInfo));
+                   return flow;
+                 });
+
   LOG(INFO) << "Run Yolo postdecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;

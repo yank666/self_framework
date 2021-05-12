@@ -19,6 +19,7 @@ class Context {
   std::string name_;
   uint32_t input_w;
   uint32_t input_h;
+  uint32_t batchs;
   std::vector<std::vector<char>> ori_data;
   std::vector<std::vector<float>> dataflow_;
   std::vector<std::vector<uint32_t>> in_shape_;

@@ -49,18 +49,21 @@ int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
 int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   vsi_status status = VSI_FAILURE;
   vx_uint64 tms_start, tms_end, ms_val;
-  PreProcess(cur_context_ptr);
   tms_start = get_perf_count();
-  status = vsi_nn_RunGraph(self_graph_);
-  if (status != VSI_SUCCESS) {
-    LOG(ERROR) << "Run graph failed.";
-    return -1;
+  uint32_t loops = cur_context_ptr->batchs;
+  while(loops--) {
+    PreProcess(cur_context_ptr);
+    status = vsi_nn_RunGraph(self_graph_);
+    if (status != VSI_SUCCESS) {
+      LOG(ERROR) << "Run graph failed.";
+      return -1;
+    }
+    PostProcess(cur_context_ptr);
   }
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
             << "neural network cost: " << ms_val << "ms";
-  PostProcess(cur_context_ptr);
   return 0;
 }
 
@@ -96,6 +99,7 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
     vnn_PreProcessByPixels(self_graph_, cur_context_ptr->dataflow_[0].data(),
                            input_data, transform_data, dtype_data);
 
+  cur_context_ptr->dataflow_.erase(cur_context_ptr->dataflow_.begin());
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";
     return -1;
@@ -188,33 +192,6 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
     }
   }
 
-  //  for (uint32_t idx = 0; idx < out_num_graph; ++idx) {
-  //    vsi_nn_tensor_t *out_tensor_t =
-  //      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[idx]);
-  //    for (auto dim : out_tensor_t->attr.size) {
-  //      cur_context_ptr->out_shape_[idx].emplace_back(dim);
-  //    }
-  //    uint8_t *out_tensor_data =
-  //      (uint8_t *)vsi_nn_ConvertTensorToData(self_graph_, out_tensor_t);
-  //    uint32_t tensor_stride =
-  //      ::vsi_nn_TypeGetBytes(out_tensor_t->attr.dtype.vx_type);
-  //
-  //    auto iter_begin = cur_context_ptr->out_dataflow_[idx].begin();
-  //    auto iter_end = cur_context_ptr->out_dataflow_[idx].end();
-  //    uint32_t iter_poisition = 0;
-  //    std::for_each(iter_begin, iter_end, [&](float &iter) {
-  //      vsi_status status =
-  //        vsi_nn_DtypeToFloat32(&(out_tensor_data[tensor_stride *
-  //        iter_poisition]), &(iter),
-  //                              &out_tensor_t->attr.dtype);
-  //      iter_poisition++;
-  //      if (status == VSI_FAILURE) {
-  //        LOG(ERROR) << "vsi_nn_DtypeToFloat32 run faied !";
-  //        vsi_nn_Free(out_tensor_data);
-  //      }
-  //    });
-  //    vsi_nn_Free(out_tensor_data);
-  //  }
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
