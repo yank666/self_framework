@@ -13,7 +13,6 @@ void Context::TransmitContext(const std::shared_ptr<Context> dst_contest) {
   dst_contest->ori_data = ori_data;
   dst_contest->input_w = input_w;
   dst_contest->input_h = input_h;
-  dst_contest->channel_ = channel_;
 
   dst_contest->dataflow_.clear();
   dst_contest->dataflow_.resize(out_dataflow_.size());

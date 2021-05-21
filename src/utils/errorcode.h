@@ -29,7 +29,7 @@ constexpr int RET_INVALID_OP_ATTR = -302;    /**< Invalid operator attr. */
 constexpr int RET_OP_EXECUTE_STAGE = -303; /**< Failed to execution operator. */
 
 /* Tensor error code, range: [-400,-500) */
-constexpr int RET_FORMAT_ERR = -400; /**< Failed to checking tensor format. */
+constexpr int RET_FORMAT_ERR = -400; /**< Failed to checking format. */
 
 /* User input param error code, range: [-600, 700)*/
 constexpr int RET_INPUT_FILE_INVALID =

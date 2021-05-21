@@ -30,10 +30,10 @@
 //                          : mindspore::LogWriter(mindspore::LocationInfo(FILE_NAME, __LINE__, __FUNCTION__), level, \
 //                                                 SUBMODULE_ID, excp_type) < mindspore::LogStream()
 
-class TImeWatch {
+class TimeWatch {
  public:
-  TImeWatch() = default;
-  ~TImeWatch() = default;
+  TimeWatch() = default;
+  ~TimeWatch() = default;
   void start() { timestamp_ = std::chrono::steady_clock::now(); }
   double stop() {
     auto elpse = std::chrono::duration_cast<std::chrono::microseconds>(

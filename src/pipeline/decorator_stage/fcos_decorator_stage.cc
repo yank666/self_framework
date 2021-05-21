@@ -8,12 +8,14 @@
 #include <unordered_map>
 #include <vector>
 namespace pipeline {
-bool FcosDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
+bool FcosDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
+                                        const ProcessContextMap &contextMap) {
   std::cout << " Run Fcos Derocatestage pre" << std::endl;
   return true;
 }
 
-bool FcosDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
+bool FcosDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
+                                         const ProcessContextMap &contextMap) {
   std::cout << " Run Fcos Derocatestage post" << std::endl;
   return true;
 }

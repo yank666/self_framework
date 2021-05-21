@@ -11,6 +11,7 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/utils)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
 
 file(GLOB_RECURSE  proto_files ${CMAKE_CURRENT_SOURCE_DIR}/modules/*.proto)
@@ -23,6 +24,7 @@ foreach(fil ${proto_files})
     list(APPEND hdrs_var "${CMAKE_CURRENT_SOURCE_DIR}/modules/proto/${fil_we}.pb.h")
 endforeach()
 
+add_subdirectory(thirdparty/tracker)
 add_subdirectory(src/pipeline)
 add_subdirectory(src/parse)
 

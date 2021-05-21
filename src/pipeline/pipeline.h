@@ -23,14 +23,6 @@ using AbstractStagePtr = std::shared_ptr<AbstractStage>;
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
 using ProcessContextMap = std::unordered_map<std::string, ProcessContext>;
 
-// enum kEngineType : int {
-//  begintype = 0,
-//  trttype = 1,
-//  amlogicaltype = 2,
-//  endtype = 3
-//};
-// const std::unordered_map<std::string, kEngineType> kEngineTypeSwitch = {
-//  {"trt", trttype}, {"nb", amlogicaltype}};
 
 class AbstractStage {
  public:
@@ -40,7 +32,8 @@ class AbstractStage {
     }
   };
   ~AbstractStage() = default;
-  virtual bool RunStage(const contextPtr &conext_ptr) = 0;
+  virtual bool RunStage(const contextPtr &conext_ptr,
+                        const ProcessContextMap &contextMap) = 0;
   bool CreateContextFromCfg();
   std::string GetModelName() { return stage_name_; }
   ModelCfgPtr GetModelCfg() { return stage_cfg_; };
@@ -59,7 +52,8 @@ class DeviceStage : public AbstractStage {
  public:
   DeviceStage(const ModelCfgPtr &model_cfg);
   ~DeviceStage() = default;
-  bool RunStage(const contextPtr &conext_ptr);
+  bool RunStage(const contextPtr &conext_ptr,
+                const ProcessContextMap &contextMap);
   bool FillStagebyEngine(const contextPtr &conext_ptr);
 
  private:
@@ -71,17 +65,21 @@ class DecoratorStage : public AbstractStage {
  public:
   DecoratorStage() : extra_stage_ptr_(nullptr), AbstractStage(nullptr){};
   ~DecoratorStage() = default;
-  bool RunStage(const contextPtr &conext_ptr);
+  bool RunStage(const contextPtr &conext_ptr,
+                const ProcessContextMap &contextMap);
   bool AddProcess(const DeviceStagePtr &device_ptr);
 
  protected:
-  virtual bool StagePreProcess(const contextPtr &conext_ptr) = 0;
-  virtual bool StagePostProcess(const contextPtr &conext_ptr) = 0;
-  bool RunSubStage(const contextPtr &conext_ptr) {
+  virtual bool StagePreProcess(const contextPtr &conext_ptr,
+                               const ProcessContextMap &contextMap) = 0;
+  virtual bool StagePostProcess(const contextPtr &conext_ptr,
+                                const ProcessContextMap &contextMap) = 0;
+  bool RunSubStage(const contextPtr &conext_ptr,
+                   const ProcessContextMap &contextMap) {
     if (extra_stage_ptr_ == nullptr) {
       return true;
     }
-    return extra_stage_ptr_->RunStage(conext_ptr);
+    return extra_stage_ptr_->RunStage(conext_ptr, contextMap);
   }
   DeviceStagePtr extra_stage_ptr_;
 };
@@ -95,14 +93,16 @@ class Pipeline {
   void RunPipeline();
   bool PushDatatoPipeline(char **input_data,
                           const std::vector<uint32_t> &input_size,
-                          uint32_t input_width, uint32_t input_height);
+                          const uint32_t &input_width,
+                          const uint32_t &input_height);
   contextPtr GetStageContextbyName(const std::string &stage_name);
   bool GetStatusofPipeline() { return is_ready_.load(); }
-  void DeliveryContext(const AbstractStagePtr cur_staga,
-                       const contextPtr cur_context);
+  void DeliveryContext(const AbstractStagePtr &cur_staga,
+                       const contextPtr &cur_context);
 
  protected:
   void RegisterStage(const ModelCfgPtr &model_cfg);
+  void RegisterEngine(const ModelCfgPtr &model_cfg);
   bool CreateContexts(const contextPtr &context_ptr,
                       const ModelCfgPtr &model_cfg);
 

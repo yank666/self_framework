@@ -12,6 +12,27 @@ namespace pipeline {
 enum ContextIdx : uint32_t { datainput = 0, dataoutput = 1, dataidx = 2 };
 
 void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
+  contextPtr stage_context = std::make_shared<device::Context>();
+  REPORT_EXCEPTION_IF_NULL(stage_context);
+
+  uint32_t current_stage_pos = model_cfg->model_position_;
+  std::string cur_stage_name = model_cfg->model_name_;
+  DecorStagePtr exec_stage_ptr =
+    DeviceInferenceFactory::GetInstance().GetDeviceInference(cur_stage_name);
+  REPORT_EXCEPTION_IF_NULL(exec_stage_ptr);
+  exec_stage_ptr->AddProcess(nullptr);
+  stages_[current_stage_pos].push_back(exec_stage_ptr);
+  process_context_.insert(std::make_pair(
+    cur_stage_name, std::make_pair(exec_stage_ptr, stage_context)));
+
+  if (current_stage_pos != 0) {
+    for (auto stage : stages_[current_stage_pos - 1]) {
+      stage->ConnectTailStage(cur_stage_name);
+    }
+  }
+}
+
+void Pipeline::RegisterEngine(const ModelCfgPtr &model_cfg) {
   DeviceStagePtr model_inference_ptr = std::make_shared<DeviceStage>(model_cfg);
   REPORT_EXCEPTION_IF_NULL(model_inference_ptr);
   contextPtr stage_context = std::make_shared<device::Context>();
@@ -72,14 +93,18 @@ bool Pipeline::InitPipeline(const std::vector<ModelCfgPtr> &model_cfgs) {
   }
   stages_.resize(model_cfgs.size());
   for (const auto &model_cfg : model_cfgs) {
-    RegisterStage(model_cfg);
+    if (model_cfg->is_inferengine_) {
+      RegisterEngine(model_cfg);
+    } else {
+      RegisterStage(model_cfg);
+    }
   }
   is_ready_.store(true);
   return true;
 }
 
-void Pipeline::DeliveryContext(const AbstractStagePtr cur_staga,
-                               const contextPtr cur_context) {
+void Pipeline::DeliveryContext(const AbstractStagePtr &cur_staga,
+                               const contextPtr &cur_context) {
   REPORT_EXCEPTION_IF_NULL(cur_staga);
   REPORT_EXCEPTION_IF_NULL(cur_context);
   auto tail_stage_name = cur_staga->GetTailStage();
@@ -101,7 +126,7 @@ void Pipeline::RunPipeline() {
                     auto cur_context_ptr =
                       GetStageContextbyName(stage->GetModelName());
                     REPORT_ERROR_IF_NULL(cur_context_ptr);
-                    stage->RunStage(cur_context_ptr);
+                    stage->RunStage(cur_context_ptr, process_context_);
                     DeliveryContext(stage, cur_context_ptr);
                   }
                   return true;
@@ -112,7 +137,8 @@ void Pipeline::RunPipeline() {
 
 bool Pipeline::PushDatatoPipeline(char **input_data,
                                   const std::vector<uint32_t> &input_size,
-                                  uint32_t input_width, uint32_t input_height) {
+                                  const uint32_t &input_width,
+                                  const uint32_t &input_height) {
   for (size_t i = 0; i < stages_[0].size(); ++i) {
     std::string stage_name = stages_[0][i]->GetModelName();
     auto stage_context_ptr = GetStageContextbyName(stage_name);
@@ -158,16 +184,18 @@ bool DeviceStage::FillStagebyEngine(const contextPtr &conext_ptr) {
   return true;
 }
 
-bool DeviceStage::RunStage(const contextPtr &conext_ptr) {
+bool DeviceStage::RunStage(const contextPtr &conext_ptr,
+                           const ProcessContextMap &contextMap) {
   // TODO：add run graph
   engine_->RunProcess(conext_ptr);
   return true;
 }
 
-bool DecoratorStage::RunStage(const contextPtr &conext_ptr) {
-  StagePreProcess(conext_ptr);
-  RunSubStage(conext_ptr);
-  StagePostProcess(conext_ptr);
+bool DecoratorStage::RunStage(const contextPtr &conext_ptr,
+                              const ProcessContextMap &contextMap) {
+  StagePreProcess(conext_ptr, contextMap);
+  RunSubStage(conext_ptr, contextMap);
+  StagePostProcess(conext_ptr, contextMap);
   return true;
 }
 

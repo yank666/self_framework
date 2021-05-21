@@ -121,9 +121,10 @@ static bool CompareBBox(const YoloV5BodyInfo &a, const YoloV5BodyInfo &b) {
   return a.score > b.score;
 }
 
-bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
+bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
+                                        const ProcessContextMap &contextMap) {
   REPORT_ERROR_IF_NULL(conext_ptr);
-  TImeWatch time_watch;
+  TimeWatch time_watch;
   time_watch.start();
   MakeGridNp();
 
@@ -436,7 +437,7 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     person_info.head = nms_boxes->at(1)[head_j].box;
     person_info.body.conf = nms_boxes->at(0)[body_i].score;
     person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
-
+    person_info.head_observed = true;
     associated_detections->push_back(person_info);
   }
 
@@ -460,7 +461,7 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
       person_info.head.x1 = person_info.body.x1;
       person_info.head.y1 = person_info.body.y1;
       person_info.head.x2 = person_info.body.x2;
-      person_info.head.y2 = person_info.body.y2 / 3;
+      person_info.head.y2 = person_info.body.y1 + (person_info.body.y2 - person_info.body.y1) / 3;
     }
     associated_detections->push_back(person_info);
   }
@@ -533,7 +534,6 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     }
 
     if (min_dist < 0.5) {
-      associated_detections->at(match_j).handpackage_observed = true;
       associated_detections->at(match_j).hand_packages.push_back(
         nms_boxes->at(3)[i].box);
     }
@@ -607,33 +607,31 @@ bool YoloDerocatestage::FindAssociationPairs(
   return true;
 }
 
-bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
+bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
+                                         const ProcessContextMap &contextMap) {
   REPORT_ERROR_IF_NULL(conext_ptr);
-  TImeWatch time_watch;
+  TimeWatch time_watch;
   time_watch.start();
   auto outputs_vecs = conext_ptr->out_dataflow_;
-  auto outputs_sizes = conext_ptr->out_shape_;
 
   std::vector<float> output;
   std::vector<std::vector<YoloV5BodyInfo>> nms_boxes_vec;
   float *inputarray[kOutCnt];
-  inputarray[0] = outputs_vecs[0].data();
-  inputarray[1] = outputs_vecs[0].data() + 3 * 4032 * kOutUnit;
-  inputarray[2] = outputs_vecs[0].data() + 3 * (4032 + 1008) * kOutUnit;
+  inputarray[0] = reinterpret_cast<float *>(outputs_vecs[0].data());
+  inputarray[1] = inputarray[0] + 3 * 4032 * kOutUnit;
+  inputarray[2] = inputarray[0] + 3 * (4032 + 1008) * kOutUnit;
 
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
   FilterBoxByScore(&nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
-  associate_vec->push_back(associate_vec->at(0));
+  conext_ptr->batches = associate_vec->size();
   conext_ptr->out_dataflow_.clear();
   conext_ptr->out_shape_.clear();
-
-  using it_type = decltype(associate_vec->begin());
   std::transform(associate_vec->begin(), associate_vec->end(),
                  std::back_inserter(conext_ptr->out_dataflow_),
                  [&](PersonInfo &info) {
-                   std::vector<float> flow;
+                   std::vector<char> flow;
                    std::vector<uint32_t> shape;
                    shape.push_back(sizeof(PersonInfo));
                    conext_ptr->out_shape_.push_back(shape);

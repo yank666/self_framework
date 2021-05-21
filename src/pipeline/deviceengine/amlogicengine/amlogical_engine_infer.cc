@@ -4,9 +4,9 @@
 #include "amlogical_engine_infer.h"
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <algorithm>
 #include <iterator>
+#include <numeric>
 #include "glog/logging.h"
 #include "src/utils/base.h"
 #include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_model.h"
@@ -32,13 +32,16 @@ int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
     return -1;
   }
   uint32_t out_num_graph = self_graph_->output.num;
-  cur_context_ptr->out_dataflow_.resize(out_num_graph);
+  cur_context_ptr->out_shape_.resize(out_num_graph);
   for (uint32_t idx = 0; idx < out_num_graph; ++idx) {
     vsi_nn_tensor_t *out_tensor =
       ::vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[idx]);
-    uint32_t element_sum = vsi_nn_GetElementNum(out_tensor);
-    cur_context_ptr->out_dataflow_[idx].resize(element_sum);
+    element_sum_ += vsi_nn_GetElementNum(out_tensor);
+    for (auto dim : out_tensor->attr.size) {
+      cur_context_ptr->out_shape_[idx].emplace_back(dim);
+    }
   }
+
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Create " << model_cfg_->model_name_
@@ -50,7 +53,17 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   vsi_status status = VSI_FAILURE;
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
-  uint32_t loops = cur_context_ptr->batchs;
+  uint32_t loops = cur_context_ptr->batches;
+  if (loops != 0) {
+    cur_context_ptr->out_dataflow_.resize(loops);
+  } else {
+    cur_context_ptr->out_dataflow_.resize(1);
+  }
+  std::for_each(cur_context_ptr->out_dataflow_.begin(),
+                cur_context_ptr->out_dataflow_.end(),[&](std::vector<char> &vec){
+      vec.resize(element_sum_);
+  });
+
   while(loops--) {
     PreProcess(cur_context_ptr);
     status = vsi_nn_RunGraph(self_graph_);
@@ -116,17 +129,13 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
   uint32_t out_num_graph = self_graph_->output.num;
-  cur_context_ptr->out_shape_.resize(out_num_graph);
+  uint64_t cur_position = 0;
   for (int i = 0; i < out_num_graph; i++) {
     uint32_t sz = 1, stride;
     uint8_t *tensor_data = NULL;
 
-    vsi_nn_tensor_t *out_tensor_t =
-      vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[i]);
-    for (auto dim : out_tensor_t->attr.size) {
-      cur_context_ptr->out_shape_[i].emplace_back(dim);
-    }
-    float *buffer = cur_context_ptr->out_dataflow_[i].data();
+    float *buffer = reinterpret_cast<float*>
+      (cur_context_ptr->out_dataflow_[i].data()) + cur_position;
     float scale;
     int32_t zero_point;
     float fl;
@@ -190,8 +199,9 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
     if (tensor_data) {
       free(tensor_data);
     }
+    cur_position += std::accumulate(std::begin(cur_context_ptr->out_shape_[i]),
+                      std::end(cur_context_ptr->out_shape_[i]), 0, std::plus<uint32_t>());
   }
-
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_

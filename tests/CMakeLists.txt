@@ -11,8 +11,9 @@ list(APPEND UT_SOURCE_FILE ${TEST_SOURCE_FILE} ${TEST_SOURCE_FILE})
 add_executable(test_ut ${UT_SOURCE_FILE})
 add_dependencies(test_ut ${third_party_deps})
 target_link_libraries(test_ut ${OPENCV_LIBS})
-target_link_libraries(test_ut gtest::gtest  glog::glog)
+target_link_libraries(test_ut gtest::gtest gtest::gtest_main glog::glog)
 target_link_libraries(test_ut parseconfig pipeline device_utile)
+target_link_libraries(test_ut MOT_Tracker parsejson)
 
 
 

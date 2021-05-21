@@ -4,7 +4,8 @@
 #include "glog/logging.h"
 
 namespace pipeline {
-bool ReidDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
+bool ReidDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
+                                        const ProcessContextMap &contextMap) {
   LOG(INFO) << " Run ReidDerocatestage pre new";
   Person person12;
   std::memcpy(&person12, conext_ptr->dataflow_[0].data(), sizeof(Person));
@@ -27,7 +28,8 @@ bool ReidDerocatestage::StagePreProcess(const contextPtr &conext_ptr) {
   return true;
 }
 
-bool ReidDerocatestage::StagePostProcess(const contextPtr &conext_ptr) {
+bool ReidDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
+                                         const ProcessContextMap &contextMap) {
   LOG(INFO) << " Run ReidDerocatestage post";
 
   return true;

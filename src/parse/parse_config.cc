@@ -12,6 +12,8 @@
 
 using google_FileInputStream = google::protobuf::io::FileInputStream;
 namespace pipeline {
+constexpr char kIsEngine[] = "InferEngine";
+
 int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
                                       pipeline::ModelCfgList *model_list) {
   int fd = open(cfg_file.c_str(), O_RDONLY);
@@ -36,8 +38,15 @@ int ParseConfig::ParseConfigFromProto(const std::string &cfg_file,
     ParserModel::InferConfigParameter model_param =
       proto_params.infer_config(i);
     model_ptr->model_name_ = model_param.name();
-    model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_position_ = model_param.model_position();
+    if (model_param.infer_config_type() != kIsEngine) {
+      model_ptr->is_inferengine_ = false;
+      model_list->emplace_back(model_ptr);
+      continue;
+    } else {
+      model_ptr->is_inferengine_ = true;
+    }
+    model_ptr->model_binary_ = model_param.model_binary();
     model_ptr->model_type_ = model_param.infer_type();
     model_ptr->data_format_ = model_param.model_input_data_format();
     for (int i = 0; i < model_param.input_shape_size(); ++i) {

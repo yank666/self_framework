@@ -1,0 +1,25 @@
+{
+  "track_params": {
+    "appearance_feature_type": 1,
+    "use_hog_feature": 1,
+    "hog_threshold": 0.6,
+    "min_track_duration": 2,
+    "forget_delay": 50,
+    "predict": 25,
+    "min_det_conf": 0.75,
+    "bbox_aspect_ratios_range_min": 0.666,
+    "bbox_aspect_ratios_range_max": 5.0,
+    "bbox_heights_range_min": 100,
+    "bbox_heights_range_max": 1000,
+    "boundary_margin_width":-1,
+    "boundary_margin_height":-1,
+    "time_affinity_w": 0.0,
+    "shape_affinity_w": 0.1,
+    "motion_affinity_w": 0.1,
+    "simple_threshold": 0.75,
+    "max_num_objects_in_track": 300,
+    "drop_forgotten_tracks": 1,
+    "use_rectify": 1,
+    "rectify_length": 5
+  }
+}

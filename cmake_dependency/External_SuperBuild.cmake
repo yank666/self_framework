@@ -27,4 +27,5 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Opencv.cmake)
 add_custom_target(third_party ALL DEPENDS ${third_party_deps})
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/base64encoding)
 

@@ -38,8 +38,10 @@ struct Person {
 };
 
 class ReidDerocatestage : public DecoratorStage {
-  bool StagePreProcess(const contextPtr &conext_ptr);
-  bool StagePostProcess(const contextPtr &conext_ptr);
+  bool StagePreProcess(const contextPtr &conext_ptr,
+                       const ProcessContextMap &contextMap);
+  bool StagePostProcess(const contextPtr &conext_ptr,
+                        const ProcessContextMap &contextMap);
 };
 }  // namespace pipeline
 

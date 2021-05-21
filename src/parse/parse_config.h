@@ -13,6 +13,7 @@ struct ModelConfig {
   uint32_t model_position_;
   std::string model_name_;
   std::string model_type_;
+  bool is_inferengine_;
   std::string model_binary_;
   std::string data_format_;
   std::vector<std::vector<uint32_t>> model_inshape_;

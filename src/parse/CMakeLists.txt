@@ -14,3 +14,11 @@ file(GLOB PARSE_VIDEO_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 add_library(parsevideo SHARED ${PARSE_VIDEO_SRC_LIST})
 add_dependencies(parsevideo External_opencv)
 target_link_libraries(parsevideo glog::glog ${OPENCV_LIBS})
+
+file(GLOB PARSE_JSON_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        "parse_json.cc"
+        )
+add_library(parsejson SHARED ${PARSE_JSON_SRC_LIST})
+target_link_libraries(parsejson glog::glog)
+add_dependencies(parsejson External_opencv)
+target_link_libraries(parsejson ${OPENCV_LIBS})

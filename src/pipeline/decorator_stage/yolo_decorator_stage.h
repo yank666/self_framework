@@ -36,7 +36,7 @@ struct PersonInfo {
   std::vector<std::pair<int, float>> attrs;
   std::vector<float> feature;
   bool face_observeed = false;
-  bool handpackage_observed = false;
+  bool head_observed = false;
 };
 
 class YoloDerocatestage : public DecoratorStage {
@@ -45,8 +45,10 @@ class YoloDerocatestage : public DecoratorStage {
   ~YoloDerocatestage() = default;
 
  protected:
-  bool StagePreProcess(const contextPtr &conext_ptr);
-  bool StagePostProcess(const contextPtr &conext_ptr);
+  bool StagePreProcess(const contextPtr &conext_ptr,
+                       const ProcessContextMap &contextMap);
+  bool StagePostProcess(const contextPtr &conext_ptr,
+                        const ProcessContextMap &contextMap);
 
  private:
   void MakeGridNp();

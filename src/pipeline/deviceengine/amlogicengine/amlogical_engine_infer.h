@@ -21,6 +21,7 @@ class AmlogicEngine : public AbstractEngine {
   int PostProcess(const contextPtr &cur_context_ptr);
 
  protected:
+  uint64_t element_sum_{0};
   vsi_nn_graph_t *self_graph_ = NULL;
 };
 }  // namespace device
