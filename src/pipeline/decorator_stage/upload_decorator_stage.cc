@@ -12,7 +12,7 @@
 
 namespace pipeline {
 constexpr bool kNeedDump = true;
-const std::string streamInfo = "{\"streamId\":\"1022\",\"equipmentId\":\"1022\",\"stream_width\":1280,\"stream_height\":720,\"taskType\":\"realVideoStream\",\"config\":{\"Graphs\":[{\"areaId\":\"1\",\"shapeType\":\"checkOut\",\"shapeList\":[{\"x\":\"0.0\",\"y\":\"0.0\"},{\"x\":\"0.0\",\"y\":\"1.0\"},{\"x\":\"1.0\",\"y\":\"1.0\"},{\"x\":\"1.0\",\"y\":\"0.0\"}],\"algoType\":\"regionAttribute\"}]}}";
+const std::string kStreamInfo = "{\"streamId\":\"1022\",\"equipmentId\":\"1022\",\"stream_width\":1280,\"stream_height\":720,\"taskType\":\"realVideoStream\",\"config\":{\"Graphs\":[{\"areaId\":\"1\",\"shapeType\":\"checkOut\",\"shapeList\":[{\"x\":\"0.0\",\"y\":\"0.0\"},{\"x\":\"0.0\",\"y\":\"1.0\"},{\"x\":\"1.0\",\"y\":\"1.0\"},{\"x\":\"1.0\",\"y\":\"0.0\"}],\"algoType\":\"regionAttribute\"}]}}";
 
 inline bool PointInPolygon(const cv::Point2f &pt,
                            const std::vector<cv::Point2d> &vertices){
@@ -35,13 +35,9 @@ bool UploadDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
     stream_info_ = std::make_shared<StreamInfo>();
   }
   if(ParseJson::ParseVideoJson(
-        const_cast<char *>(streamInfo.data()),stream_info_)) {
+        const_cast<char *>(kStreamInfo.data()),stream_info_)) {
     return false;
   }
-  if (conext_ptr->callback_function_ != nullptr) {
-    return false;
-  }
-
 
 //      conext_ptr->callback_function_(json_str, strlen(json_str) + 1,
 //                                     conext_ptr->stream_id_.c_str(), conext_ptr->stream_id_.size());
@@ -55,6 +51,7 @@ bool UploadDerocatestage::StagePostProcess(
     return false;
   }
   auto det_context = det_iter->second.second;
+  REPORT_EXCEPTION_IF_NULL(det_context);
   std::vector<PersonInfo> detect_infos;
   detect_infos.resize(det_context->out_dataflow_.size());
   for(auto i = 0; i <= detect_infos.size(); i++){
@@ -77,8 +74,8 @@ bool UploadDerocatestage::StagePostProcess(
     SelectAttrofUploadJson(conext_ptr, obj.detect_res_info[idx], detect_infos[idx]);
 //    const char *json_str = json_val_.dump().c_str();
   }
-//  std::fstream file("key.json");
-//  file << jsonfile;
+  std::fstream file("key.json");
+  file << std::setw(4) << jsonfile;
   return true;
 }
 

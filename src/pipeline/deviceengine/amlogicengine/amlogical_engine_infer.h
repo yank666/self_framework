@@ -18,7 +18,7 @@ class AmlogicEngine : public AbstractEngine {
   int RunProcess(const contextPtr &cur_context_ptr);
   virtual vsi_nn_graph_t *InitModel(std::string binary_path) { return nullptr; }
   int PreProcess(const contextPtr &cur_context_ptr);
-  int PostProcess(const contextPtr &cur_context_ptr);
+  int PostProcess(const contextPtr &cur_context_ptr, const uint32_t &idx);
 
  protected:
   uint64_t element_sum_{0};

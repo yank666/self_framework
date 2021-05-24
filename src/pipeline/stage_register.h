@@ -23,8 +23,7 @@ class DeviceInferenceFactory {
   std::shared_ptr<DecoratorStage> GetDeviceInference(std::string name) {
     auto iter = inference_creator_.find(name);
     if (iter == inference_creator_.end()) {
-      //      LOG(ERROR) << "DeviceInferenceFactory can't find
-      //      inference_creator_ KEY: " << iter->first;
+      LOG(ERROR) << "DeviceInferenceFactory can't find " << iter->first;
       return nullptr;
     }
     return iter->second;

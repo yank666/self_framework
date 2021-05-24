@@ -10,11 +10,11 @@ install(FILES ${CMAKE_BINARY_DIR}/thirdparty/glog/lib/libglog.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/thirdparty/protobuf/lib/libprotobuf.a
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
+install(FILES ${CMAKE_BINARY_DIR}/thirdparty/base64encoding/libbase64.so
+        DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/libpipeline.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparseconfig.so
-        DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
-install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparsevideo.so
+install(FILES ${CMAKE_BINARY_DIR}/src/parse/libparsemodule.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/src/pipeline/deviceengine/libdevice_utile.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})

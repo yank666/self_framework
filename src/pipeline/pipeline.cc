@@ -20,6 +20,7 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
   DecorStagePtr exec_stage_ptr =
     DeviceInferenceFactory::GetInstance().GetDeviceInference(cur_stage_name);
   REPORT_EXCEPTION_IF_NULL(exec_stage_ptr);
+  exec_stage_ptr->SetStageName(model_cfg->model_name_);
   exec_stage_ptr->AddProcess(nullptr);
   stages_[current_stage_pos].push_back(exec_stage_ptr);
   process_context_.insert(std::make_pair(

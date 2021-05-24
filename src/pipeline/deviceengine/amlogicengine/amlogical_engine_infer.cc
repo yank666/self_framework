@@ -58,25 +58,27 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
     cur_context_ptr->out_dataflow_.resize(loops);
   } else {
     cur_context_ptr->out_dataflow_.resize(1);
+    loops = 1;
   }
   std::for_each(cur_context_ptr->out_dataflow_.begin(),
                 cur_context_ptr->out_dataflow_.end(),[&](std::vector<char> &vec){
-      vec.resize(element_sum_);
+      vec.resize(element_sum_ * sizeof(float));
   });
-
-  while(loops--) {
+  uint32_t count = 0;
+  while(count < loops) {
     PreProcess(cur_context_ptr);
     status = vsi_nn_RunGraph(self_graph_);
     if (status != VSI_SUCCESS) {
       LOG(ERROR) << "Run graph failed.";
       return -1;
     }
-    PostProcess(cur_context_ptr);
+    PostProcess(cur_context_ptr, count);
+    count++;
   }
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
-            << "neural network cost: " << ms_val << "ms";
+            << " neural network cost: " << ms_val << "ms";
   return 0;
 }
 
@@ -124,7 +126,8 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   return 0;
 }
 
-int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
+int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
+                               const uint32_t &idx) {
   REPORT_ERROR_IF_NULL(cur_context_ptr);
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
@@ -135,7 +138,7 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr) {
     uint8_t *tensor_data = NULL;
 
     float *buffer = reinterpret_cast<float*>
-      (cur_context_ptr->out_dataflow_[i].data()) + cur_position;
+      (cur_context_ptr->out_dataflow_[idx].data()) + cur_position;
     float scale;
     int32_t zero_point;
     float fl;

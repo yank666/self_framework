@@ -19,15 +19,16 @@ class BenchMark : public CommonTest {
   ~BenchMark() = default;
 };
 
+
 TEST_F(BenchMark, st) {
   uint32_t kInputUnit = 1 * 3 * 384 * 672;
   FLAGS_minloglevel = 0;
-  std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules/config_file/models.cfg";
+  std::string model_cfg_file = "models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
   ASSERT_EQ(0, ret);
   cv::Mat img = cv::imread("./input.jpg", 1);
-  ASSERT_NE(img.empty(),false);
+  ASSERT_EQ(img.empty(),false);
   std::vector<uint32_t> input_size;
   input_size.push_back(kInputUnit * sizeof(uint8_t));
   pipeline::Pipeline ss;
@@ -38,19 +39,15 @@ TEST_F(BenchMark, st) {
   LOG(INFO) << "Run SUCCESS!";
 }
 
-TEST_F(BenchMark, readnull) {
-  cv::Mat img = cv::imread("/home/yankai.yan/workbase/codeLib/refactor/tests/bin/input.jpg");
-//  ASSERT_EQ(img.empty(), true);
-  std::string model_cfg_file = "/home/yankai.yan/workbase/codeLib/refactor/modules//models.cfg";
+TEST_F(BenchMark, init) {
+  std::string model_cfg_file = "models.cfg";
   std::vector<pipeline::ModelCfgPtr> cfg_vec;
   int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
   ASSERT_EQ(0, ret);
   auto pipeline_ptr = std::make_shared<Pipeline>();
   ASSERT_NE(nullptr, pipeline_ptr);
   std::vector<uint32_t> input_size;
-  input_size.push_back(3 * 384 * 672 * sizeof(uint8_t));
   pipeline_ptr->InitPipeline(cfg_vec);
-  pipeline_ptr->PushDatatoPipeline((char **)&img.data, input_size, 672, 384);
   pipeline_ptr->RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }

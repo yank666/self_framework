@@ -481,7 +481,6 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
   }
 
   int num_person = associated_detections->size();
-  LOG(INFO) << "associated_detections size is : " << num_person << " ";
   // 2.0 face 与 head 关联
   Eigen::MatrixXf Cost_face2head = Eigen::MatrixXf::Zero(num_face, num_person);
   for (size_t i = 0; i < num_face; ++i) {
@@ -613,7 +612,6 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   TimeWatch time_watch;
   time_watch.start();
   auto outputs_vecs = conext_ptr->out_dataflow_;
-
   std::vector<float> output;
   std::vector<std::vector<YoloV5BodyInfo>> nms_boxes_vec;
   float *inputarray[kOutCnt];
@@ -625,6 +623,7 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   ObtainBoxAndScore(output, &nms_boxes_vec);
   FilterBoxByScore(&nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
+//  LOG(INFO) << " yolo batches is " << associate_vec->size();
   conext_ptr->batches = associate_vec->size();
   conext_ptr->out_dataflow_.clear();
   conext_ptr->out_shape_.clear();
@@ -641,7 +640,7 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
                  });
 
   LOG(INFO) << "Run Yolo postdecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+            << time_watch.stop() << "ms" ;
   return true;
 }
 REG_Stage(yolo, std::make_shared<YoloDerocatestage>())

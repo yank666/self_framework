@@ -55,7 +55,6 @@ class DeviceStage : public AbstractStage {
   bool RunStage(const contextPtr &conext_ptr,
                 const ProcessContextMap &contextMap);
   bool FillStagebyEngine(const contextPtr &conext_ptr);
-
  private:
   std::shared_ptr<device::AbstractEngine> engine_;
 };
@@ -68,7 +67,7 @@ class DecoratorStage : public AbstractStage {
   bool RunStage(const contextPtr &conext_ptr,
                 const ProcessContextMap &contextMap);
   bool AddProcess(const DeviceStagePtr &device_ptr);
-
+  void SetStageName(const std::string name) {stage_name_ = name;}
  protected:
   virtual bool StagePreProcess(const contextPtr &conext_ptr,
                                const ProcessContextMap &contextMap) = 0;

@@ -28,12 +28,10 @@ TEST_F(Unit, yolodecorator) {
   FLAGS_minloglevel = 0;
   char *in = nullptr;
   const uint32_t kInputSize = 333396;
-  in = ReadFromFile("/home/yankai.yan/workbase/codeLib/refactor/tests/bin/torch_out.bins", kInputSize * sizeof(float));
+  in = ReadFromFile("torch_out.bins", kInputSize * sizeof(float));
   ASSERT_NE(nullptr, in);
   contextPtr context_ptr = std::make_shared<Context>();
   std::vector<uint32_t> data_size_set = {kInputSize};
-  context_ptr->out_shape_.resize(1);
-  context_ptr->out_shape_[0] = data_size_set;
   context_ptr->out_dataflow_.resize(1);
   context_ptr->out_dataflow_[0].resize(kInputSize * sizeof(float));
   memcpy(context_ptr->out_dataflow_[0].data(), in, kInputSize * sizeof(float));
