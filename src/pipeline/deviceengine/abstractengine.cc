@@ -14,13 +14,18 @@ void Context::TransmitContext(const std::shared_ptr<Context> dst_contest) {
   dst_contest->input_w = input_w;
   dst_contest->input_h = input_h;
   dst_contest->batches = batches;
+  dst_contest->stream_id_ = stream_id_;
+  dst_contest->equipment_id_ = equipment_id_;
+  dst_contest->time_stamp_ = time_stamp_;
+  dst_contest->frame_num_ = frame_num_;
+
   dst_contest->dataflow_.clear();
   dst_contest->dataflow_.resize(out_dataflow_.size());
 
   for (int i = 0; i < out_dataflow_.size(); i++) {
     dst_contest->dataflow_[i].resize(out_dataflow_[i].size());
     std::memcpy(dst_contest->dataflow_[i].data(), out_dataflow_[i].data(),
-                out_dataflow_[i].size() * sizeof(float));
+                out_dataflow_[i].size());
   }
   dst_contest->in_shape_ = out_shape_;
 }

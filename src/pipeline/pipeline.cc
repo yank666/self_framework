@@ -146,11 +146,18 @@ bool Pipeline::PushDatatoPipeline(char **input_data,
     if (stage_context_ptr == nullptr) {
       return false;
     }
+    stage_context_ptr->batches = 1;
     stage_context_ptr->input_w = input_width;
     stage_context_ptr->input_h = input_height;
+
+    stage_context_ptr->ori_data.clear();
     stage_context_ptr->ori_data.resize(stages_[0].size());
     stage_context_ptr->ori_data[i].resize(input_size[i]);
     memcpy(stage_context_ptr->ori_data[0].data(), input_data[i], input_size[i]);
+
+    stage_context_ptr->dataflow_.clear();
+    stage_context_ptr->dataflow_.resize(1);
+    stage_context_ptr->dataflow_[0].resize(input_size[i]);
     memcpy(stage_context_ptr->dataflow_[0].data(), input_data[i],
            input_size[i]);
   }

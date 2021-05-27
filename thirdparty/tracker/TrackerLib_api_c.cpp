@@ -37,6 +37,7 @@ int tracker_inference(detect_res *input, detect_res *output, int m_frame_idx, un
     //将结果存入跟踪输入并排序
     for (int i = 0; i < input->num_detections; i++) {
         float prob = input->detect_res_info[i].prob;
+        float quality = input->detect_res_info[i].quality;
         float x = std::max(input->detect_res_info[i].box.x1, 0.0f);
         x = std::min(x, width * 1.0f - 2.0f);
         float y = std::max(input->detect_res_info[i].box.y1, 0.0f);
@@ -80,6 +81,7 @@ int tracker_lost_predict(detect_res *output, void *lib_handle) {
         output->detect_res_info[i].box.y2 = tracker_res[i]->rect.br().y;
         output->detect_res_info[i].track_id = tracker_res[i]->object_id;
         output->detect_res_info[i].prob = tracker_res[i]->confidence;
+        output->detect_res_info[i].quality = tracker_res[i]->detect_quality;
         output->detect_res_info[i].label = tracker_res[i]->label;
         output->detect_res_info[i].feature_len = 0;
     }
@@ -91,7 +93,6 @@ int tracker_release(void *lib_handle) {
     int status = 0;
     auto *tracker = (TrackerLib_api *) lib_handle;
     tracker->release();
-    tracker = nullptr;
     delete tracker;
     return status;
 }

@@ -23,14 +23,13 @@ struct StreamInfo {
   std::vector<RegionInfo> config;
 };
 
-
 class ParseJson {
  public:
   ParseJson() = default;
   ~ParseJson() = default;
-  static STATUS ParseInitJson(char* input);
-  static STATUS ParseVideoJson(char* input,
+  static STATUS ParseInitJson(char *input);
+  static STATUS ParseVideoJson(char *input,
                                const std::shared_ptr<StreamInfo> &stream_info);
 };
-}
+}  // namespace pipeline
 #endif  // SELF_ARCHITECTURE_UPLOAD_MANAGER_H

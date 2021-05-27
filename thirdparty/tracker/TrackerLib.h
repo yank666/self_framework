@@ -25,6 +25,10 @@ namespace iot_track {
     struct TrackerLibParams {
         AppearanceFeatureType appearance_feature_type;
 
+        bool use_detect_quality;  /// 是否使用 检测模型的输出质量分 来判断遮挡状态。与 use_hog_feature 互斥
+        
+        float quality_threshold;  /// quality 的阈值，当 use_detect_quality = true， 且使用外观特征时有效
+
         bool use_hog_feature;  /// 是否使用hog 特征来判断遮挡状态。
 
         float hog_threshold;  /// hog 特征的阈值，当 use_hog_feature = true， 且使用外观特征时有效

@@ -17,11 +17,12 @@ struct detect_bbox_info{
    float prob;
    float feature[256];
    int feature_len;
+   float quality;
 };
 
 struct detect_res{
    int num_detections;
-   detect_bbox_info detect_res_info[300];
+   detect_bbox_info detect_res_info[30];
 };
 
 /***************************************************************************************************

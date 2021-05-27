@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include "TrackerLib.h"
-#include "json/json.hpp"
+#include "thirdparty/json/json.hpp"
 
 namespace iot_track {
     using json = nlohmann::json;
@@ -75,15 +75,15 @@ namespace iot_track {
             }
             else {
                 return std::make_tuple(0, dc, m);
-
             }
         }
         return std::make_tuple(min_frame, dc, m);
-
     }
 
     TrackerLibParams::TrackerLibParams()
             : appearance_feature_type(HISTOGRAM),
+              use_detect_quality(false),
+              quality_threshold(0.9),
               use_hog_feature(false),
               hog_threshold(0.7),
               min_track_duration(0),
@@ -113,6 +113,8 @@ namespace iot_track {
 
         appearance_feature_type = params_json["track_params"]["appearance_feature_type"] < int(FeatureTypeLast) ?
                 AppearanceFeatureType(params_json["track_params"]["appearance_feature_type"]) : NONE;
+        use_detect_quality = params_json["track_params"]["use_detect_quality"] == 0 ? false : true;
+        quality_threshold = params_json["track_params"]["quality_threshold"];
         use_hog_feature = params_json["track_params"]["use_hog_feature"] == 0 ? false : true;
         hog_threshold = params_json["track_params"]["hog_threshold"];
         min_track_duration = params_json["track_params"]["min_track_duration"];
@@ -866,7 +868,14 @@ namespace iot_track {
                 if (params_.appearance_feature_type != NONE) {
                     app_aff = 1.0f - distance_->Compute(last_obj->appearance_feature, detections[j]->appearance_feature);
 
-                    if (params_.use_hog_feature && detections[j]->frame_idx - last_obj->frame_idx <= 2) {
+                    if (params_.use_detect_quality && detections[j]->frame_idx - last_obj->frame_idx <= 2) {
+                        double detect_quality = detections[j]->detect_quality;
+                        if (detect_quality < params_.quality_threshold) {
+                            app_aff = 1.0f - distance_->Compute(cur_track->appearance_feature_mean(),
+                                                                detections[j]->appearance_feature);
+                        }
+                    }
+                    else if (params_.use_hog_feature && detections[j]->frame_idx - last_obj->frame_idx <= 2) {
                         cv::Mat hog_diff = detections[j]->hog_feature - last_obj->hog_feature;
                         double hog_score = hog_diff.dot(hog_diff);
                         if (hog_score > params_.hog_threshold) {

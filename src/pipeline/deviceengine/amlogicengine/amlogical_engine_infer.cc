@@ -53,6 +53,7 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   vsi_status status = VSI_FAILURE;
   vx_uint64 tms_start, tms_end, ms_val;
   tms_start = get_perf_count();
+  cur_context_ptr->out_dataflow_.clear();
   uint32_t loops = cur_context_ptr->batches;
   if (loops != 0) {
     cur_context_ptr->out_dataflow_.resize(loops);
@@ -60,13 +61,13 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
     cur_context_ptr->out_dataflow_.resize(1);
     loops = 1;
   }
-  std::for_each(cur_context_ptr->out_dataflow_.begin(),
-                cur_context_ptr->out_dataflow_.end(),[&](std::vector<char> &vec){
-      vec.resize(element_sum_ * sizeof(float));
-  });
+  std::for_each(
+    cur_context_ptr->out_dataflow_.begin(),
+    cur_context_ptr->out_dataflow_.end(),
+    [&](std::vector<char> &vec) { vec.resize(element_sum_ * sizeof(float)); });
   uint32_t count = 0;
-  while(count < loops) {
-    PreProcess(cur_context_ptr);
+  while (count < loops) {
+    PreProcess(cur_context_ptr, count);
     status = vsi_nn_RunGraph(self_graph_);
     if (status != VSI_SUCCESS) {
       LOG(ERROR) << "Run graph failed.";
@@ -82,7 +83,8 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   return 0;
 }
 
-int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
+int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr,
+                              const uint32_t &idx) {
   REPORT_ERROR_IF_NULL(cur_context_ptr);
   vx_uint64 tms_start = get_perf_count();
   uint32_t param_mean_size = model_cfg_->model_mean_.size();
@@ -113,8 +115,6 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   vsi_status status =
     vnn_PreProcessByPixels(self_graph_, cur_context_ptr->dataflow_[0].data(),
                            input_data, transform_data, dtype_data);
-
-  cur_context_ptr->dataflow_.erase(cur_context_ptr->dataflow_.begin());
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";
     return -1;
@@ -123,6 +123,9 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr) {
   vx_uint64 ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
             << "preprocess cost: " << ms_val << "ms";
+  free(dtype_data);
+  free(input_data);
+  free(transform_data);
   return 0;
 }
 
@@ -137,14 +140,14 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
     uint32_t sz = 1, stride;
     uint8_t *tensor_data = NULL;
 
-    float *buffer = reinterpret_cast<float*>
-      (cur_context_ptr->out_dataflow_[idx].data()) + cur_position;
+    float *buffer =
+      reinterpret_cast<float *>(cur_context_ptr->out_dataflow_[idx].data()) +
+      cur_position;
     float scale;
     int32_t zero_point;
     float fl;
     vsi_nn_tensor_t *o_tensor =
       vsi_nn_GetTensor(self_graph_, self_graph_->output.tensors[i]);
-
     if (o_tensor->attr.dtype.vx_type == VSI_NN_TYPE_UINT8) {
       scale = o_tensor->attr.dtype.scale;
       zero_point = o_tensor->attr.dtype.zero_point;
@@ -157,7 +160,6 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
     }
     stride = vsi_nn_TypeGetBytes(o_tensor->attr.dtype.vx_type);
     tensor_data = (uint8_t *)vsi_nn_ConvertTensorToData(self_graph_, o_tensor);
-
     if (buffer == NULL) {
       LOG(INFO) << "break";
       break;
@@ -203,7 +205,8 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
       free(tensor_data);
     }
     cur_position += std::accumulate(std::begin(cur_context_ptr->out_shape_[i]),
-                      std::end(cur_context_ptr->out_shape_[i]), 0, std::plus<uint32_t>());
+                                    std::end(cur_context_ptr->out_shape_[i]), 0,
+                                    std::plus<uint32_t>());
   }
   tms_end = get_perf_count();
   ms_val = (tms_end - tms_start) / 1000000;

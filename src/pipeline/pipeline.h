@@ -23,7 +23,6 @@ using AbstractStagePtr = std::shared_ptr<AbstractStage>;
 using ProcessContext = std::pair<AbstractStagePtr, contextPtr>;
 using ProcessContextMap = std::unordered_map<std::string, ProcessContext>;
 
-
 class AbstractStage {
  public:
   AbstractStage(const ModelCfgPtr &model_cfg) : stage_cfg_(model_cfg) {
@@ -31,7 +30,7 @@ class AbstractStage {
       stage_name_ = model_cfg->model_name_;
     }
   };
-  ~AbstractStage() = default;
+  virtual ~AbstractStage() = default;
   virtual bool RunStage(const contextPtr &conext_ptr,
                         const ProcessContextMap &contextMap) = 0;
   bool CreateContextFromCfg();
@@ -55,6 +54,7 @@ class DeviceStage : public AbstractStage {
   bool RunStage(const contextPtr &conext_ptr,
                 const ProcessContextMap &contextMap);
   bool FillStagebyEngine(const contextPtr &conext_ptr);
+
  private:
   std::shared_ptr<device::AbstractEngine> engine_;
 };
@@ -63,11 +63,12 @@ using DeviceStagePtr = std::shared_ptr<DeviceStage>;
 class DecoratorStage : public AbstractStage {
  public:
   DecoratorStage() : extra_stage_ptr_(nullptr), AbstractStage(nullptr){};
-  ~DecoratorStage() = default;
+  virtual ~DecoratorStage() = default;
   bool RunStage(const contextPtr &conext_ptr,
                 const ProcessContextMap &contextMap);
   bool AddProcess(const DeviceStagePtr &device_ptr);
-  void SetStageName(const std::string name) {stage_name_ = name;}
+  void SetStageName(const std::string name) { stage_name_ = name; }
+
  protected:
   virtual bool StagePreProcess(const contextPtr &conext_ptr,
                                const ProcessContextMap &contextMap) = 0;

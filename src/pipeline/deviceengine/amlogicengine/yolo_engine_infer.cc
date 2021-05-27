@@ -11,10 +11,16 @@
 
 namespace device {
 vsi_nn_graph_t *YoloEngineInfer::InitModel(std::string binary_path) {
-  return vnn_CreateYolov5Sim(
-    reinterpret_cast<const char *>(binary_path.data()), NULL,
-    vnn_GetPrePorcessMap(), vnn_GetPrePorcessMapCount(),
-    vnn_GetPostPorcessMap(), vnn_GetPostPorcessMapCount());
+  return vnn_CreateBestSim(reinterpret_cast<const char *>(binary_path.data()),
+                           NULL, vnn_GetPrePorcessMap(),
+                           vnn_GetPrePorcessMapCount(), vnn_GetPostPorcessMap(),
+                           vnn_GetPostPorcessMapCount());
+  //  return vnn_CreateYolov5Sim(reinterpret_cast<const char
+  //  *>(binary_path.data()),
+  //                           NULL, vnn_GetPrePorcessMap(),
+  //                           vnn_GetPrePorcessMapCount(),
+  //                           vnn_GetPostPorcessMap(),
+  //                           vnn_GetPostPorcessMapCount());
 }
 
 REG_DeviceEngine(yolo, nb, std::make_shared<YoloEngineInfer>(nullptr))

@@ -3,7 +3,11 @@
 //
 
 #include "common_test.h"
+#include <dirent.h>
+#include <regex>
 #include "glog/logging.h"
+
+constexpr char kExtenrnMatch[] = ".*\.";
 void CommonTest::SetUpTestCase() {}
 
 void CommonTest::TearDownTestCase() {}
@@ -42,6 +46,22 @@ char *CommonTest::ReadFromFile(std::string file_name, size_t memlen) {
   return buf;
 }
 
+int CommonTest::SaveToFile(const std::string &filename, char *buf, uint32_t fb_size) {
+  std::ofstream out_file;
+  out_file.open(filename.c_str(), std::ios::binary);
+  if (!out_file.good()) {
+    LOG(ERROR) << "file is bad";
+    return -1;
+  }
+
+  if (!out_file.is_open()) {
+    LOG(ERROR) << "file open failed";
+    return -1;
+  }
+  out_file.write(reinterpret_cast<char *>(buf), fb_size);
+  return 0;
+}
+
 template <typename T>
 void CommonTest::PrintData(const std::string &name, T *output_data, int size) {
   std::cout << "The " << name << " is as follows:" << std::endl;
@@ -71,4 +91,23 @@ int CommonTest::CompareOutputData(const T *output_data, const T *correct_data, i
     return 1;
   }
   return 0;
+}
+
+
+void CommonTest::GetFileNames(std::string path, const std::string& ext_name,
+                              std::vector<std::string> *filenames) {
+  std::regex reg_obj(kExtenrnMatch + ext_name, std::regex::icase);
+  DIR *pDir;
+  struct dirent *ptr;
+  if (!(pDir = opendir(path.c_str()))) {
+    LOG(ERROR) << "Folder doesn't Exist!";
+    return;
+  }
+  while ((ptr = readdir(pDir)) != 0) {
+    if(std::regex_match(ptr->d_name, reg_obj))
+    if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0) {
+      filenames->emplace_back(path + "/" + ptr->d_name);
+    }
+  }
+  closedir(pDir);
 }

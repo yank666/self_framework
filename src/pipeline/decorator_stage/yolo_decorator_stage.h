@@ -7,37 +7,8 @@
 
 #include "src/pipeline/pipeline.h"
 #include "Eigen/Dense"
-
+#include "src/utils/common_struct.h"
 namespace pipeline {
-struct YoloV5Box {
-  float x1;
-  float y1;
-  float x2;
-  float y2;
-  float conf;
-};
-
-struct YoloV5BodyInfo {
-  float score;
-  int type;
-  YoloV5Box box;
-  YoloV5Box related_box;
-  float related_score;
-  std::vector<std::pair<int, float>> attrs;  // 属性label: 属性score
-};
-
-struct PersonInfo {
-  int32_t label;
-  YoloV5Box body;
-  YoloV5Box head;
-  YoloV5Box face;
-
-  std::vector<YoloV5Box> hand_packages;
-  std::vector<std::pair<int, float>> attrs;
-  std::vector<float> feature;
-  bool face_observeed = false;
-  bool head_observed = false;
-};
 
 class YoloDerocatestage : public DecoratorStage {
  public:
@@ -64,7 +35,8 @@ class YoloDerocatestage : public DecoratorStage {
                             std::unordered_map<size_t, size_t> &matched_pairs,
                             std::vector<size_t> &orphan_row_items,
                             std::vector<size_t> &orphan_col_items);
-  void FilterBoxByScore(std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec);
+  void FilterBoxByScore(
+    std::vector<std::vector<YoloV5BodyInfo>> *nms_boxes_vec);
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_{nullptr};
   std::shared_ptr<std::vector<std::vector<int32_t>>> anchor_grid_np_{nullptr};
 };

@@ -11,7 +11,7 @@
 namespace pipeline {
 using json = nlohmann::json;
 
-STATUS ParseJson::ParseInitJson(char* input) {
+STATUS ParseJson::ParseInitJson(char *input) {
   json json_val = json::parse(input);
   if (!json_val.contains("nGpuId")) {
     return RET_INPUT_PARAM_INVALID;
@@ -24,11 +24,12 @@ STATUS ParseJson::ParseInitJson(char* input) {
   return RET_OK;
 }
 
-STATUS ParseJson::ParseVideoJson(char* input,
-                              const std::shared_ptr<StreamInfo> &stream_info) {
+STATUS ParseJson::ParseVideoJson(
+  char *input, const std::shared_ptr<StreamInfo> &stream_info) {
   REPORT_EXCEPTION_IF_NULL(stream_info);
   json json_val = json::parse(input);
-  if (!json_val.contains("stream_width") || !json_val.contains("stream_height")) {
+  if (!json_val.contains("stream_width") ||
+      !json_val.contains("stream_height")) {
     return RET_INPUT_PARAM_INVALID;
   }
   int width = json_val["stream_width"].get<int>();
@@ -48,7 +49,7 @@ STATUS ParseJson::ParseVideoJson(char* input,
   stream_info->taskType = json_val["taskType"].get<std::string>();
 
   if (!json_val.contains("config")) {
-      return RET_INPUT_PARAM_INVALID;
+    return RET_INPUT_PARAM_INVALID;
   }
   json json_conf = json_val["config"];
   if (!json_conf.contains("Graphs")) {
@@ -87,4 +88,4 @@ STATUS ParseJson::ParseVideoJson(char* input,
   }
   return RET_OK;
 }
-}
+}  // namespace pipeline

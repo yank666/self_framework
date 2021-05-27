@@ -2,11 +2,11 @@
 // Created by yankai on 2021/3/8.
 //
 #include "fcos_decorator_stage.h"
-#include "src/pipeline/stage_register.h"
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "src/pipeline/stage_register.h"
 namespace pipeline {
 bool FcosDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
                                         const ProcessContextMap &contextMap) {

@@ -17,7 +17,7 @@ class AmlogicEngine : public AbstractEngine {
   int CreateGraph(const contextPtr &cur_context_ptr);
   int RunProcess(const contextPtr &cur_context_ptr);
   virtual vsi_nn_graph_t *InitModel(std::string binary_path) { return nullptr; }
-  int PreProcess(const contextPtr &cur_context_ptr);
+  int PreProcess(const contextPtr &cur_context_ptr, const uint32_t &idx);
   int PostProcess(const contextPtr &cur_context_ptr, const uint32_t &idx);
 
  protected:

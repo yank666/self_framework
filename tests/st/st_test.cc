@@ -34,8 +34,11 @@ TEST_F(BenchMark, st) {
   pipeline::Pipeline ss;
 
   ss.InitPipeline(cfg_vec);
-  ss.PushDatatoPipeline((char **)(&img.data), input_size, img.cols,  img.rows);
-  ss.RunPipeline();
+
+  for (int i = 0; i < 1; i++) {
+    ss.PushDatatoPipeline((char **)(&img.data), input_size, img.cols,  img.rows);
+    ss.RunPipeline();
+  }
   LOG(INFO) << "Run SUCCESS!";
 }
 

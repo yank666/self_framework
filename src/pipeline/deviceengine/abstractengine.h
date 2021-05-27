@@ -23,13 +23,15 @@ class Context {
   std::string stream_id_;
   std::string equipment_id_;
   long long time_stamp_;
+  uint32_t frame_num_;
   std::vector<std::vector<char>> ori_data;
   std::vector<std::vector<char>> dataflow_;
   std::vector<std::vector<uint32_t>> in_shape_;
   std::vector<std::vector<char>> out_dataflow_;
   std::vector<std::vector<uint32_t>> out_shape_;
-  std::function<int(const char* strResult, int nResultLen, const char *StreamId,
-                    int nStreamIdlen)> callback_function_;
+  std::function<int(const char *strResult, int nResultLen, const char *StreamId,
+                    int nStreamIdlen)>
+    callback_function_;
 
   void TransmitContext(const std::shared_ptr<Context> dst_contest);
   void CopyContext(const std::shared_ptr<Context> dst_contest);

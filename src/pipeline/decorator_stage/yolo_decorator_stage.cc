@@ -15,6 +15,10 @@
 #include "src/pipeline/stage_register.h"
 
 namespace pipeline {
+inline float StrictScale(float input, float max) {
+  float ret = (input < 0) ? 0 : input;
+  return (ret > max) ? max : ret;
+}
 
 const float kConfThreshold = 0.3f;
 const float kIouThreshold = 0.5f;
@@ -73,6 +77,16 @@ enum ClassifyLabel : int {
   cls_handpackage
 };
 
+inline void CopyAttrArray(std::pair<int, float> *dst,
+                          const std::vector<std::pair<int, float>> src) {
+  for (auto item : src) {
+    dst[0] = src[0];
+    dst[1] = src[1];
+    dst[2] = src[2];
+    dst[3] = src[4];
+  }
+}
+
 inline float sigmoid(float x) {
   float temp = (1 / (1 + exp(-x)));
   return temp;
@@ -118,7 +132,7 @@ void maxscore(const float *x, int n, float &max_score, int &max_ind) {
 }
 
 static bool CompareBBox(const YoloV5BodyInfo &a, const YoloV5BodyInfo &b) {
-  return a.score > b.score;
+  return a.box.conf > b.box.conf;
 }
 
 bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
@@ -128,7 +142,7 @@ bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
   time_watch.start();
   MakeGridNp();
 
-  LOG(INFO) << "Run Yolo predecorate stage run success, cost"
+  LOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
@@ -298,32 +312,38 @@ void YoloDerocatestage::ObtainBoxAndScore(
       }
     }
     YoloV5BodyInfo body_info;
-    body_info.score = score_max;
+    body_info.box.conf = score_max;
     body_info.type = max_score_idx - 1;
-    body_info.box.x1 = output[idx * kOutActualShape[0][3] + 0] -
-                       output[idx * kOutActualShape[0][3] + 2] / 2;
-    body_info.box.y1 = output[idx * kOutActualShape[0][3] + 1] -
-                       output[idx * kOutActualShape[0][3] + 3] / 2;
-    body_info.box.x2 =
-      body_info.box.x1 + output[idx * kOutActualShape[0][3] + 2];
-    body_info.box.y2 =
-      body_info.box.y1 + output[idx * kOutActualShape[0][3] + 3];
-
-    body_info.related_score =
+    body_info.box.x1 =
+      StrictScale(output[idx * kOutActualShape[0][3] + 0] -
+                    output[idx * kOutActualShape[0][3] + 2] / 2,
+                  kInw);
+    body_info.box.y1 =
+      StrictScale(output[idx * kOutActualShape[0][3] + 1] -
+                    output[idx * kOutActualShape[0][3] + 3] / 2,
+                  kInh);
+    body_info.box.x2 = StrictScale(
+      body_info.box.x1 + output[idx * kOutActualShape[0][3] + 2], kInw);
+    body_info.box.y2 = StrictScale(
+      body_info.box.y1 + output[idx * kOutActualShape[0][3] + 3], kInh);
+    body_info.related_box.conf =
       output[idx * kOutActualShape[0][3] + kClassifyNum + 5];
-    body_info.related_box.x1 =
+    body_info.related_box.x1 = StrictScale(
       output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 1] -
-      output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3] / 2;
-    body_info.related_box.y1 =
+        output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3] / 2,
+      kInw);
+    body_info.related_box.y1 = StrictScale(
       output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 2] -
-      output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4] / 2;
+        output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4] / 2,
+      kInh);
     body_info.related_box.x2 =
-      body_info.related_box.x1 +
-      output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3];
+      StrictScale(body_info.related_box.x1 +
+                    output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3],
+                  kInw);
     body_info.related_box.y2 =
-      body_info.related_box.y1 +
-      output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4];
-
+      StrictScale(body_info.related_box.y1 +
+                    output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4],
+                  kInh);
     float orient_max_score = -1.0;
     int orient_max_ind = 0;
     maxscore(&output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 5], 4,
@@ -339,8 +359,7 @@ void YoloDerocatestage::ObtainBoxAndScore(
     body_info.attrs.push_back(std::pair<int, float>(
       0, output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 5 + 4 +
                 2]));  // 清晰度
-
-    vec_boxes[max_score_idx - 1].push_back(body_info);
+    vec_boxes[max_score_idx - 1].emplace_back(body_info);
   }
 
   nms_boxes_vec->resize(kClassifyNum);
@@ -432,11 +451,11 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
 
     PersonInfo person_info;
     person_info.label = 0;
-    person_info.attrs = nms_boxes->at(0)[body_i].attrs;
+    CopyAttrArray(person_info.attrs, nms_boxes->at(0)[body_i].attrs);
     person_info.body = nms_boxes->at(0)[body_i].box;
     person_info.head = nms_boxes->at(1)[head_j].box;
-    person_info.body.conf = nms_boxes->at(0)[body_i].score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].related_score;
+    person_info.body.conf = nms_boxes->at(0)[body_i].box.conf;
+    person_info.head.conf = nms_boxes->at(1)[head_j].related_box.conf;
     person_info.head_observed = true;
     associated_detections->push_back(person_info);
   }
@@ -445,12 +464,10 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
   for (const auto body_i : unmatched_rows) {
     PersonInfo person_info;
     person_info.label = 0;
-    person_info.attrs = nms_boxes->at(0)[body_i].attrs;
-    person_info.body.conf = nms_boxes->at(0)[body_i].score;
-    person_info.head.conf = nms_boxes->at(0)[body_i].related_score;
+    CopyAttrArray(person_info.attrs, nms_boxes->at(0)[body_i].attrs);
+    person_info.body.conf = nms_boxes->at(0)[body_i].box.conf;
+    person_info.head.conf = nms_boxes->at(0)[body_i].related_box.conf;
     //    person_info.attr = body_detections[body_i]->attr;
-
-    person_info.body = nms_boxes->at(0)[body_i].box;
 
     person_info.body = nms_boxes->at(0)[body_i].box;
     person_info.head = nms_boxes->at(0)[body_i].related_box;
@@ -461,22 +478,9 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
       person_info.head.x1 = person_info.body.x1;
       person_info.head.y1 = person_info.body.y1;
       person_info.head.x2 = person_info.body.x2;
-      person_info.head.y2 = person_info.body.y1 + (person_info.body.y2 - person_info.body.y1) / 3;
+      person_info.head.y2 =
+        person_info.body.y1 + (person_info.body.y2 - person_info.body.y1) / 3;
     }
-    associated_detections->push_back(person_info);
-  }
-
-  // head匹配不成功，保留
-  for (const auto head_j : unmatched_cols) {
-    PersonInfo person_info;
-    person_info.label = 0;
-    person_info.attrs = nms_boxes->at(1)[head_j].attrs;
-    person_info.body = nms_boxes->at(1)[head_j].related_box;
-    person_info.head = nms_boxes->at(1)[head_j].box;
-
-    person_info.body.conf = nms_boxes->at(1)[head_j].related_score;
-    person_info.head.conf = nms_boxes->at(1)[head_j].score;
-
     associated_detections->push_back(person_info);
   }
 
@@ -533,8 +537,10 @@ std::shared_ptr<std::vector<PersonInfo>> YoloDerocatestage::ComputeAssociate(
     }
 
     if (min_dist < 0.5) {
-      associated_detections->at(match_j).hand_packages.push_back(
-        nms_boxes->at(3)[i].box);
+      associated_detections->at(match_j)
+        .hand_packages[associated_detections->at(match_j).hand_packages_nums] =
+        nms_boxes->at(3)[i].box;
+      associated_detections->at(match_j).hand_packages_nums++;
     }
   }
 
@@ -546,7 +552,7 @@ void YoloDerocatestage::FilterBoxByScore(
                 [](std::vector<YoloV5BodyInfo> &vec_info) {
                   auto iter = vec_info.begin();
                   while (iter != vec_info.end()) {
-                    if (iter->score < kBoxThreshold) {
+                    if (iter->box.conf < kBoxThreshold) {
                       iter = vec_info.erase(iter);
                     } else {
                       iter++;
@@ -618,12 +624,10 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   inputarray[0] = reinterpret_cast<float *>(outputs_vecs[0].data());
   inputarray[1] = inputarray[0] + 3 * 4032 * kOutUnit;
   inputarray[2] = inputarray[0] + 3 * (4032 + 1008) * kOutUnit;
-
   DecodingOutput(inputarray, &output);
   ObtainBoxAndScore(output, &nms_boxes_vec);
   FilterBoxByScore(&nms_boxes_vec);
   auto associate_vec = ComputeAssociate(&nms_boxes_vec);
-//  LOG(INFO) << " yolo batches is " << associate_vec->size();
   conext_ptr->batches = associate_vec->size();
   conext_ptr->out_dataflow_.clear();
   conext_ptr->out_shape_.clear();
@@ -639,8 +643,8 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
                    return flow;
                  });
 
-  LOG(INFO) << "Run Yolo postdecorate stage run success, cost"
-            << time_watch.stop() << "ms" ;
+  LOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
+            << time_watch.stop() << "ms";
   return true;
 }
 REG_Stage(yolo, std::make_shared<YoloDerocatestage>())

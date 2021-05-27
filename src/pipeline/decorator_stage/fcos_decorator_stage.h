@@ -8,6 +8,7 @@
 #include "src/pipeline/pipeline.h"
 namespace pipeline {
 class FcosDerocatestage : public DecoratorStage {
+ protected:
   bool StagePreProcess(const contextPtr &conext_ptr,
                        const ProcessContextMap &contextMap);
   bool StagePostProcess(const contextPtr &conext_ptr,

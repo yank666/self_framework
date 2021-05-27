@@ -14,19 +14,22 @@ namespace pipeline {
 using json = nlohmann::ordered_json;
 
 class UploadDerocatestage : public DecoratorStage {
+ protected:
   bool StagePreProcess(const contextPtr &conext_ptr,
                        const ProcessContextMap &contextMap);
   bool StagePostProcess(const contextPtr &conext_ptr,
                         const ProcessContextMap &contextMap);
 
- protected:
+ private:
   bool InitUpLoadJson(const contextPtr &conext_ptr,
                       const detect_bbox_info &detect, const PersonInfo &person);
   bool UpdataUpLoadJson(const contextPtr &conext_ptr,
-                      const detect_bbox_info &detect, const PersonInfo &person);
+                        const detect_bbox_info &detect,
+                        const PersonInfo &person);
   bool SelectAttrofUploadJson(const contextPtr &conext_ptr,
-                      const detect_bbox_info &detect, const PersonInfo &person);
-//  json json_val_;
+                              const detect_bbox_info &detect,
+                              const PersonInfo &person);
+  //  json json_val_;
   std::shared_ptr<StreamInfo> stream_info_;
   std::unordered_map<int, json> upload_struct_;
 };

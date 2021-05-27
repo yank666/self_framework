@@ -121,6 +121,13 @@ vsi_nn_graph_t *vnn_CreateYolov5Sim(
   const vsi_nn_postprocess_map_element_t *post_process_map,
   uint32_t post_process_map_count);
 
+vsi_nn_graph_t *vnn_CreateBestSim(
+  const char *data_file_name, vsi_nn_context_t in_ctx,
+  const vsi_nn_preprocess_map_element_t *pre_process_map,
+  uint32_t pre_process_map_count,
+  const vsi_nn_postprocess_map_element_t *post_process_map,
+  uint32_t post_process_map_count);
+
 #ifdef __cplusplus
 }
 #endif
