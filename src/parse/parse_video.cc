@@ -15,16 +15,22 @@ constexpr uint32_t kMillisecondUnit = 1000;
 
 ParseVideo::ParseVideo(const uint32_t buffer_size) {
   max_ = (buffer_size > kMaxBufferSize) ? kMaxBufferSize : buffer_size;
+  stop_ = false;
 }
 
 int ParseVideo::ParseVideoFromStream(const std::string stream_file,
                                      int32_t streamd_id) {
   if (stream_file.empty()) {
+    stop_ = true;
+    be_ready_ = false;
     return RET_INPUT_FILE_INVALID;
   }
-  cv::VideoCapture capture(stream_file);
+
+  cv::VideoCapture capture(stream_file, -1);
   if (!capture.isOpened()) {
     LOG(ERROR) << "Parse video failed, open " << stream_file << "failed!";
+    stop_ = true;
+    be_ready_ = false;
     return RET_INPUT_PARAM_INVALID;
   }
   frame_list_ = std::make_shared<CircleBuffer<cv::Mat>>(max_);
@@ -52,6 +58,8 @@ int ParseVideo::ParseVideoFromStream(const std::string stream_file,
     DLOG(INFO) << "frame_list_ push " << frame_list_->size() << " "
                << total_frames;
   }
+  stop_ = true;
+  be_ready_ = false;
   return RET_OK;
 }
 

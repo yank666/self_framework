@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread")
 
-set(FRAME_DEPENDENCIES "")
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -34,6 +33,7 @@ endif()
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/Package.cmake)
 
 
-#add_executable(main "")
-#target_sources(main PRIVATE main.cc)
+#add_executable(main main.cc)
+#add_dependencies(main External_opencv)
+#target_link_libraries(main ${OPENCV_LIBS})
 

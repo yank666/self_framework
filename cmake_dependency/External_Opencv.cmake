@@ -10,8 +10,8 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "TRT")
 else()
     SET(OPENCV_INCLUDE_DIR "${OPENCV_INSTALL_DIR}/sdk/native/jni/include" CACHE PATH "opencv include directory." FORCE)
     include_directories(${OPENCV_INCLUDE_DIR})
-    set(OPENCV_CMAKE_ARGS_EXTRA "-DBUILD_FAT_JAVA_LIB=ON")
-    set(OPENCV_CMAKE_CACHE_ARGS_EXTRA "-DBUILD_FAT_JAVA_LIB:BOOL=ON")
+    SET(OPENCV_INCLUDE_DIR "${OPENCV_INSTALL_DIR}/sdk/native/jni/include" CACHE PATH "opencv include directory." FORCE)
+
 endif()
 
 ExternalProject_Add (External_opencv
@@ -29,6 +29,7 @@ ExternalProject_Add (External_opencv
                         -DBUILD_opencv_python2=OFF
                         -DBUILD_opencv_python3=OFF
                         -DWITH_CUDA=OFF
+                        -DWITH_FFMPEG=ON
                         -DBUILD_SHARED_LIBS=ON
         CMAKE_CACHE_ARGS
                         -DCMAKE_INSTALL_PREFIX:PATH=${OPENCV_INSTALL_DIR}
@@ -43,6 +44,7 @@ ExternalProject_Add (External_opencv
                         -DBUILD_opencv_python2:BOOL=OFF
                         -DBUILD_opencv_python3:BOOL=OFF
                         -DWITH_CUDA:BOOL=OFF
+                        -DWITH_FFMPEG:BOOL=ON
                         -DBUILD_SHARED_LIBS:BOOL=ON
         )
 

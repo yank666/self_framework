@@ -29,7 +29,7 @@ class ParseVideo {
   uint32_t stream_frames_;
   uint32_t stream_width_;
   uint32_t stream_height_;
-  bool stop_;
+  std::atomic<bool> stop_;
   uint32_t max_;
   //   CircleBuffer<cv::Mat> frame_list_;
   std::shared_ptr<CircleBuffer<cv::Mat>> frame_list_;

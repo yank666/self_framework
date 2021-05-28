@@ -75,6 +75,7 @@ TEST_F(BenchMark, readvideo) {
   }
   int count_run_turn  = 0;
   int total_turn = stream_ptr->GetTotalFrames();
+  LOG(INFO) << "SUCCESS at get ready";
   int break_flag = 0;
   while(count_run_turn < total_turn && stream_ptr->GetReady()) {
     cv::Mat img;
@@ -86,6 +87,34 @@ TEST_F(BenchMark, readvideo) {
     pipeline_ptr->RunPipeline();
     DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
 
+    count_run_turn++;
+  }
+
+  thread_stream.join();
+  LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
+}
+
+TEST_F(BenchMark, video) {
+  LOG(INFO) << "Begin BenchMark.video test";
+  int ret = 0;
+  std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
+  ASSERT_NE(stream_ptr, nullptr);
+  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoFromStream, stream_ptr, "video.avi", 0));
+  ASSERT_EQ(ret, 0);
+  while(!stream_ptr->GetReady()) {
+    sleep(1);
+  }
+  int count_run_turn  = 0;
+  LOG(INFO) << "Begin BenchMark.video test 1";
+  int total_turn = stream_ptr->GetTotalFrames();
+  LOG(INFO) << "SUCCESS at get ready";
+  int break_flag = 0;
+  while(count_run_turn < total_turn && stream_ptr->GetReady()) {
+    cv::Mat img;
+    if (!stream_ptr->GetParseDate(img)) {
+      continue;
+    }
+    DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
     count_run_turn++;
   }
 

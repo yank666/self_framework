@@ -121,7 +121,7 @@ TEST_F(Unit, parsejson) {
   LOG(INFO) << "Run SUCCESS!";
 }
 
-TEST_F(Unit, multiyolo) {
+TEST_F(Unit, multiinput) {
   std::vector<std::string> name_vec;
   GetFileNames("/home/yankai.yan/workbase/codeLib/refactor/tests/bin", "yolobin",
                &name_vec);
