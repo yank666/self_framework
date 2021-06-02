@@ -84,21 +84,20 @@ int ParseVideo::ParseVideoByFFmpeg(const std::string stream_file) {
   AVPacket *packet;
   int ret;
   struct SwsContext *img_convert_ctx;
-
-  avformat_network_init();  //加载socket库以及网络加密协议相关的库，为后续使用网络相关提供支持
-  pFormatCtx = avformat_alloc_context();  //初始化AVFormatContext  结构
-  ret =
-    avformat_open_input(&pFormatCtx, stream_file.c_str(), NULL,
-                        NULL);  //打开音视频文件并初始化AVFormatContext结构体
+  //加载socket库以及网络加密协议相关的库，为后续使用网络相关提供支持
+  avformat_network_init();
+  //初始化AVFormatContext  结构
+  pFormatCtx = avformat_alloc_context();
+  //打开音视频文件并初始化AVFormatContext结构体
+  ret = avformat_open_input(&pFormatCtx, stream_file.c_str(), NULL, NULL);
   if (ret != 0) {
     stop_ = true;
     be_ready_ = false;
     return ret;
   }
 
-  ret = avformat_find_stream_info(
-    pFormatCtx,
-    NULL);  //根据AVFormatContext结构体,来获取视频上下文信息,并初始化streams[]成员
+  //根据AVFormatContext结构体,来获取视频上下文信息,并初始化streams[]成员
+  ret = avformat_find_stream_info(pFormatCtx, NULL);
   if (ret != 0) {
     stop_ = true;
     be_ready_ = false;
@@ -106,24 +105,20 @@ int ParseVideo::ParseVideoByFFmpeg(const std::string stream_file) {
   }
 
   videoindex = -1;
-  videoindex = av_find_best_stream(
-    pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL,
-    0);  //根据type参数从ic->
-         //streams[]里获取用户要找的流,找到成功后则返回streams[]中对应的序列号,否则返回-1
-  //  std::cout <<"视频宽度:"<<pFormatCtx->streams[videoindex]->codecpar->width
-  //  << std::endl; std::cout
-  //  <<"视频高度:"<<pFormatCtx->streams[videoindex]->codecpar->height <<
-  //  std::endl;
-  pCodec = avcodec_find_decoder(
-    pFormatCtx->streams[videoindex]
-      ->codecpar
-      ->codec_id);  //通过解码器编号来遍历codec_list[]数组,来找到AVCodec
-  pCodecCtx = avcodec_alloc_context3(
-    pCodec);  //构造AVCodecContext ,并将vcodec填入AVCodecContext中
-  avcodec_parameters_to_context(
-    pCodecCtx,
-    pFormatCtx->streams[videoindex]->codecpar);  //初始化AVCodecContext
-  ret = avcodec_open2(pCodecCtx, NULL, NULL);    //打开解码器
+  //根据type参数从ic->
+  // streams[]里获取用户要找的流,找到成功后则返回streams[]中对应的序列号,否则返回-1
+  videoindex =
+    av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+  //通过解码器编号来遍历codec_list[]数组,来找到AVCodec
+  pCodec =
+    avcodec_find_decoder(pFormatCtx->streams[videoindex]->codecpar->codec_id);
+  //构造AVCodecContext ,并将vcodec填入AVCodecContext中
+  pCodecCtx = avcodec_alloc_context3(pCodec);
+  //初始化AVCodecContext
+  avcodec_parameters_to_context(pCodecCtx,
+                                pFormatCtx->streams[videoindex]->codecpar);
+  //打开解码器
+  ret = avcodec_open2(pCodecCtx, NULL, NULL);
   if (ret != 0) {
     stop_ = true;
     be_ready_ = false;
