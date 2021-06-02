@@ -19,17 +19,18 @@ class ParseVideo {
   explicit ParseVideo(const uint32_t buffer_size = 10);
   ~ParseVideo() = default;
   int ParseVideoFromStream(const std::string stream_file, int32_t streamd_id);
+  int ParseVideoByFFmpeg(const std::string stream_file);
   bool GetParseDate(cv::Mat &result);
   uint32_t GetVideoFrames() { return frame_list_->size(); };
   bool GetReady() { return be_ready_; };
   uint32_t GetTotalFrames() { return stream_frames_; }
+  std::atomic<bool> stop_;
 
  protected:
   double stream_fps_;
   uint32_t stream_frames_;
   uint32_t stream_width_;
   uint32_t stream_height_;
-  std::atomic<bool> stop_;
   uint32_t max_;
   //   CircleBuffer<cv::Mat> frame_list_;
   std::shared_ptr<CircleBuffer<cv::Mat>> frame_list_;

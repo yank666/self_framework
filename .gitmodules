@@ -13,3 +13,6 @@
 [submodule "thirdparty/opencv"]
 	path = thirdparty/opencv
 	url = https://gitee.com/mirrors/opencv.git
+[submodule "thirdparty/ffmpeg"]
+	path = thirdparty/ffmpeg
+	url = https://github.com.cnpmjs.org/FFmpeg/FFmpeg.git

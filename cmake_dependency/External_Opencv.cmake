@@ -1,7 +1,6 @@
 message("External project: Opencv")
 
-SET(OPENCV_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/opnecv)
-SET(OPENCV_INSTALL_DIR   ${CMAKE_BINARY_DIR}/thirdparty/opencv)
+SET(OPENCV_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/opencv)
 if (${ENABLE_ENGINE_TYPE} MATCHES "TRT")
     SET(OPENCV_INCLUDE_DIR "${OPENCV_INSTALL_DIR}/include" CACHE PATH "opencv include directory." FORCE)
     include_directories(${OPENCV_INCLUDE_DIR})

@@ -10,7 +10,6 @@ else()
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/eigen)
-
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include)
 include_directories(${PROJECT_SOURCE_DIR}/thirdparty/ddk/include/utils)
@@ -25,6 +24,7 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Glog.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Gtest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Opencv.cmake)
+#include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_FFmpeg.cmake)
 add_custom_target(third_party ALL DEPENDS ${third_party_deps})
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/base64encoding)

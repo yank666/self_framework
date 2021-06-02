@@ -8,6 +8,17 @@
 #include "opencv2/opencv.hpp"
 #include "src/utils/errorcode.h"
 #include "src/utils/base.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "libavutil/avutil.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace pipeline {
 constexpr uint32_t kMaxBufferSize = 20;
@@ -63,6 +74,105 @@ int ParseVideo::ParseVideoFromStream(const std::string stream_file,
   return RET_OK;
 }
 
+int ParseVideo::ParseVideoByFFmpeg(const std::string stream_file) {
+  AVFormatContext    *pFormatCtx;
+  int videoindex;
+  AVCodecContext    *pCodecCtx;
+  AVCodec            *pCodec;
+  AVFrame    *pFrame, *pFrameRGB;
+  uint8_t *out_buffer;
+  AVPacket *packet;
+  int ret;
+  struct SwsContext *img_convert_ctx;
+
+  avformat_network_init();//加载socket库以及网络加密协议相关的库，为后续使用网络相关提供支持
+  pFormatCtx = avformat_alloc_context(); //初始化AVFormatContext  结构
+  ret=avformat_open_input(&pFormatCtx, stream_file.c_str(), NULL, NULL);//打开音视频文件并初始化AVFormatContext结构体
+  if (ret != 0) {
+    stop_ = true;
+    be_ready_ = false;
+    return ret;
+  }
+
+  ret=avformat_find_stream_info(pFormatCtx, NULL);//根据AVFormatContext结构体,来获取视频上下文信息,并初始化streams[]成员
+  if (ret != 0) {
+    stop_ = true;
+    be_ready_ = false;
+    return ret;
+  }
+
+  videoindex = -1;
+  videoindex = av_find_best_stream(pFormatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);//根据type参数从ic-> streams[]里获取用户要找的流,找到成功后则返回streams[]中对应的序列号,否则返回-1
+//  std::cout <<"视频宽度:"<<pFormatCtx->streams[videoindex]->codecpar->width << std::endl;
+//  std::cout <<"视频高度:"<<pFormatCtx->streams[videoindex]->codecpar->height << std::endl;
+  pCodec = avcodec_find_decoder(pFormatCtx->streams[videoindex]->codecpar->codec_id);//通过解码器编号来遍历codec_list[]数组,来找到AVCodec
+  pCodecCtx = avcodec_alloc_context3(pCodec); //构造AVCodecContext ,并将vcodec填入AVCodecContext中
+  avcodec_parameters_to_context(pCodecCtx, pFormatCtx->streams[videoindex]->codecpar); //初始化AVCodecContext
+  ret = avcodec_open2(pCodecCtx, NULL,NULL); //打开解码器
+  if (ret != 0) {
+    stop_ = true;
+    be_ready_ = false;
+    return ret;
+  }
+  pFrame = av_frame_alloc();
+  pFrameRGB = av_frame_alloc();
+  int size = avpicture_get_size(AV_PIX_FMT_BGR24, pCodecCtx->width, pCodecCtx->height);
+  out_buffer = (uint8_t *)av_malloc(size);
+
+  avpicture_fill((AVPicture *)pFrameRGB, out_buffer,
+                 AV_PIX_FMT_RGB24, pCodecCtx->width, pCodecCtx->height);
+  packet = (AVPacket *)av_malloc(sizeof(AVPacket));
+  img_convert_ctx = sws_getContext(pCodecCtx->width,
+                                   pCodecCtx->height,
+                                   pCodecCtx->pix_fmt,
+                                   pCodecCtx->width,
+                                   pCodecCtx->height,
+                                   AV_PIX_FMT_RGB24,
+                                   SWS_BICUBIC,
+                                   NULL,NULL,NULL);
+
+  int got_picture;
+  cv::Mat dst_bgr;
+  frame_list_ = std::make_shared<CircleBuffer<cv::Mat>>(max_);
+  while (!stop_ && av_read_frame(pFormatCtx, packet) >= 0){
+    //如果是视频数据
+    if (packet->stream_index == videoindex){
+      ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, packet);
+      if (ret < 0)
+      {
+        printf("Decode Error.（解码错误）\n");
+        stop_ = true;
+        be_ready_ = false;
+        return -1;
+      }
+      if (got_picture) {
+        // YUV to RGB
+        sws_scale(img_convert_ctx, (const uint8_t *const *)pFrame->data,
+                  pFrame->linesize, 0, pCodecCtx->height, pFrameRGB->data,
+                  pFrameRGB->linesize);
+        cv::Mat src_rgb(pCodecCtx->height, pCodecCtx->width, CV_8UC3, out_buffer);
+        cvtColor(src_rgb, dst_bgr, cv::COLOR_RGB2BGR);
+        while (frame_list_->size() >= max_) {
+          be_ready_ = true;
+          usleep(50 * kMillisecondUnit);
+        }
+        frame_list_->push(dst_bgr);
+      }
+    }
+  }
+
+  av_free(out_buffer);
+  av_packet_free(&packet);
+  av_frame_free(&pFrameRGB);
+  av_frame_free(&pFrame);
+  sws_freeContext(img_convert_ctx);
+  img_convert_ctx=NULL;
+  avcodec_close(pCodecCtx);
+  avformat_close_input(&pFormatCtx);
+  stop_ = true;
+  be_ready_ = false;
+  return 0;
+}
 bool ParseVideo::GetParseDate(cv::Mat &result) {
   if (frame_list_->size() == 0) {
     return false;

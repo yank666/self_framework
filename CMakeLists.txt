@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(Self_Architecture)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread -Wno-deprecated-declarations")
 
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
 
@@ -34,6 +34,6 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/Package.cmake)
 
 
 #add_executable(main main.cc)
-#add_dependencies(main External_opencv)
-#target_link_libraries(main ${OPENCV_LIBS})
+#add_dependencies(main External_opencv External_ffmpeg)
+#target_link_libraries(main ${FFMPEG_LIBS} ${OPENCV_LIBS})
 

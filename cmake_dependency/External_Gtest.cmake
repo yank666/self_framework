@@ -1,8 +1,7 @@
 message("External project: Gtest")
 
-SET(GLOG_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest)
 SET(GTEST_INSTALL_DIR   ${CMAKE_BINARY_DIR}/thirdparty/gtest)
-SET(GTEST_INCLUDE_DIR "${GLOG_INSTALL_DIR}/include" CACHE PATH "gtest include directory." FORCE)
+SET(GTEST_INCLUDE_DIR "${GTEST_INSTALL_DIR}/include" CACHE PATH "gtest include directory." FORCE)
 set(GTEST_LIBRARIES "${GTEST_INSTALL_DIR}/lib/libgtest.so" CACHE FILEPATH "gtest libraries." FORCE)
 set(GTEST_MAIN_LIBRARIES "${GTEST_INSTALL_DIR}/lib/libgtest_main.so" CACHE FILEPATH "gtest_main libraries." FORCE)
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIR})
