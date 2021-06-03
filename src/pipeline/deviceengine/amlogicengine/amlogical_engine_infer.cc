@@ -110,8 +110,11 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr,
   uint32_t sz = vsi_nn_GetElementNum(tensor);
   uint32_t stride = vsi_nn_TypeGetBytes(tensor->attr.dtype.vx_type);
   uint8_t *dtype_data = (uint8_t *)malloc(stride * sz * sizeof(uint8_t));
+  REPORT_ERROR_IF_NULL(dtype_data);
   float *input_data = (float *)malloc(sz * sizeof(float));
+  REPORT_ERROR_IF_NULL(input_data);
   float *transform_data = (float *)malloc(sz * sizeof(float));
+  REPORT_ERROR_IF_NULL(transform_data);
   vsi_status status =
     vnn_PreProcessByPixels(self_graph_, cur_context_ptr->dataflow_[0].data(),
                            input_data, transform_data, dtype_data);

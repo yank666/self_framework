@@ -1,7 +1,6 @@
 message("External project: protobuf")
 
 SET(PROTO_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/protobuf)
-SET(PROTO_INSTALL_DIR   ${CMAKE_BINARY_DIR}/thirdparty/protobuf)
 SET(PROTO_INCLUDE_DIR "${PROTO_INSTALL_DIR}/include" CACHE PATH "protobuf include directory." FORCE)
 set(PROTO_LIBRARIES "${PROTO_INSTALL_DIR}/lib/libprotobuf.a" CACHE FILEPATH "protobuf libraries." FORCE)
 
@@ -28,4 +27,7 @@ ExternalProject_Add (External_protobuf
 
 ADD_LIBRARY(protobuf::libprotobuf STATIC IMPORTED GLOBAL)
 SET_PROPERTY(TARGET protobuf::libprotobuf PROPERTY IMPORTED_LOCATION ${PROTO_LIBRARIES})
+if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
+    target_link_libraries(protobuf::libprotobuf INTERFACE log)
+endif()
 LIST(APPEND third_party_deps External_protobuf)

@@ -9,8 +9,6 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "TRT")
 else()
     SET(OPENCV_INCLUDE_DIR "${OPENCV_INSTALL_DIR}/sdk/native/jni/include" CACHE PATH "opencv include directory." FORCE)
     include_directories(${OPENCV_INCLUDE_DIR})
-    SET(OPENCV_INCLUDE_DIR "${OPENCV_INSTALL_DIR}/sdk/native/jni/include" CACHE PATH "opencv include directory." FORCE)
-
 endif()
 
 ExternalProject_Add (External_opencv

@@ -38,15 +38,6 @@ typedef struct _vnn_input_meta {
   };
 } vnn_input_meta_t;
 
-vsi_status vnn_PreProcessDetectSim(vsi_nn_graph_t *graph,
-                                   struct ModelConfig *config,
-                                   const char **inputs, uint32_t input_num);
-
-vsi_status vnn_PreProcessDetectSim_ImageProcess(vsi_nn_graph_t *graph,
-                                                struct ModelConfig *config,
-                                                const char **inputs,
-                                                uint32_t input_num);
-
 vsi_status vnn_PreProcessByPixels(vsi_nn_graph_t *graph, void *img_data,
                                   float *input_data, float *transform_data,
                                   uint8_t *dtype_data);
@@ -65,7 +56,7 @@ const vsi_nn_preprocess_map_element_t *vnn_GetPrePorcessMap();
 
 uint32_t vnn_GetPrePorcessMapCount();
 
-vsi_status vnn_SetChannelandMean(uint32_t channel_format, float *mean,
+void vnn_SetChannelandMean(uint32_t channel_format, float *mean,
                                  float *norm);
 
 #ifdef __cplusplus
