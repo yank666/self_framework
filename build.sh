@@ -134,11 +134,11 @@ build_project()
     -DANDROID_NDK="${ANDROID_NDK}" -DANDROID_ABI="armeabi-v7a" -DANDROID_TOOLCHAIN_NAME="aarch64-linux-android-clang" \
     -DANDROID_STL=${ANDROID_STL} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}  -DENABLE_ENGINE_TYPE="$ENABLE_ENGINE_TYPE" \
     -DBUILD_TESTCASE=${RUN_TESTCASES} ..
-    make -j$THREAD_NUM #&& make package
+    make -j$THREAD_NUM && make package
   else
      echo "=================${CMAKE_ARGS}========================="
      cmake ${CMAKE_ARGS} ..
-     cmake --build . -j$THREAD_NUM #--target package ${CMAKE_VERBOSE}
+     cmake --build . -j$THREAD_NUM --target package ${CMAKE_VERBOSE}
   fi
 
 }

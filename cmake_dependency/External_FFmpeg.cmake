@@ -11,6 +11,7 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
     set(OS "android")
     set(TOOLCHAIN "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64")
     set(SYSROOT "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot")
+    set(ASM "${SYSROOT}/usr/include/arm-linux-androideabi")
     set(CC "${TOOLCHAIN}/bin/armv7a-linux-androideabi${API}-clang")
     set(CXX "${TOOLCHAIN}/bin/armv7a-linux-androideabi${API}-clang++")
     set(STRIP "${TOOLCHAIN}/bin/arm-linux-androideabi-strip")
@@ -22,19 +23,23 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
             CMAKE_ARGS      ${EXTRA_CMAKE_ARGS}
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${FFMPEG_INSTALL_DIR}
             --enable-shared
+            --enable-gpl
+            --enable-jni
+            --enable-small
+            --enable-network
+            --enable-mediacodec
+            --enable-avresample
+            --enable-pic
+            --disable-asm
+            --disable-x86asm
             --disable-static
             --disable-neon
             --disable-hwaccels
             --disable-gpl
             --disable-postproc
             --disable-doc
-            --disable-ffmpeg
-            --disable-ffprobe
-            --enable-ffplay
-            --disable-doc
             --disable-symver
-            --enable-pic
-            --disable-postproc
+            --disable-stripping
             --cross-prefix=${CROSS_PREFIX}
             --target-os=android
             --arch=arm
@@ -44,7 +49,8 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
             --strip=${STRIP}
             --enable-cross-compile
             --sysroot=${SYSROOT}
-            --extra-cflags="-Os -fpic -fno-rtti ${OPTIMIZE_CFLAGS}"
+            --extra-cflags="-I$ASM -isysroot $SYSROOT -fPIC -D__thumb__ -mthumb -Wfatal-errors -Wno-deprecated -mfloat-abi=softfp -D__ANDROID_API__=28 -Os -marm"
+            --extra-ldflags="-marm"
         )
 else()
     ExternalProject_Add (External_ffmpeg
@@ -67,7 +73,7 @@ else()
             )
 endif()
 
-set(FFMPEG_LIB_NAMES avcodec avdevice avfilter avformat avutil swresample swscale)
+set(FFMPEG_LIB_NAMES avcodec avdevice avfilter avformat avutil swscale)
 foreach(LIB ${FFMPEG_LIB_NAMES})
     set(FFMPEG_LIBS ${FFMPEG_LIBS} "${FFMPEG_INSTALL_DIR}/lib/lib${LIB}.so")
 endforeach()
