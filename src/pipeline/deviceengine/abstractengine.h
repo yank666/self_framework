@@ -20,9 +20,9 @@ class Context {
   uint32_t input_w;
   uint32_t input_h;
   uint32_t batches;
-  std::string stream_id_;
-  std::string equipment_id_;
-  long long time_stamp_;
+  std::string stream_id_ = "1111111111111";
+  std::string equipment_id_ = "222222222222222222";
+  long long time_stamp_ = 123;
   uint32_t frame_num_;
   std::vector<std::vector<char>> ori_data;
   std::vector<std::vector<char>> dataflow_;

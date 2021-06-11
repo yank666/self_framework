@@ -20,6 +20,7 @@ class TrackerDerocatestage : public DecoratorStage {
                         const ProcessContextMap &contextMap);
 
  private:
+   uint32_t frame_idx_;
   void *tracker_api{nullptr};
 };
 }  // namespace pipeline

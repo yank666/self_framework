@@ -13,7 +13,19 @@
 #include "src/pipeline/deviceengine/amlogicengine/vnn_common/vnn_pre_process.h"
 
 namespace device {
-AmlogicEngine::~AmlogicEngine() {}
+AmlogicEngine::~AmlogicEngine() {
+  vnn_ReleaseModel(self_graph_, true);
+  if (dtype_data_ != nullptr) {
+    delete []dtype_data_;
+
+  }
+  if (input_data_ != nullptr) {
+    delete []input_data_;
+  }
+  if (transform_data_ != nullptr) {
+    delete []transform_data_;
+  }
+}
 
 int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
   REPORT_ERROR_IF_NULL(cur_context_ptr);
@@ -31,6 +43,19 @@ int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
     LOG(ERROR) << "vnn_VerifyGraph failed";
     return -1;
   }
+
+  vsi_nn_tensor_t *input_tensor
+    = vsi_nn_GetTensor(self_graph_, self_graph_->input.tensors[0]);
+  uint32_t sz = vsi_nn_GetElementNum(input_tensor);
+  uint32_t stride = vsi_nn_TypeGetBytes(input_tensor->attr.dtype.vx_type);
+
+  dtype_data_ = new (std::nothrow) uint8_t[stride * sz];
+  REPORT_ERROR_IF_NULL(dtype_data_);
+  input_data_ = new (std::nothrow) float[sz];
+  REPORT_ERROR_IF_NULL(input_data_);
+  transform_data_ = new (std::nothrow) float[sz];
+  REPORT_ERROR_IF_NULL(transform_data_);
+
   uint32_t out_num_graph = self_graph_->output.num;
   cur_context_ptr->out_shape_.resize(out_num_graph);
   for (uint32_t idx = 0; idx < out_num_graph; ++idx) {
@@ -55,17 +80,14 @@ int AmlogicEngine::RunProcess(const contextPtr &cur_context_ptr) {
   tms_start = get_perf_count();
   cur_context_ptr->out_dataflow_.clear();
   uint32_t loops = cur_context_ptr->batches;
-  if (loops != 0) {
-    cur_context_ptr->out_dataflow_.resize(loops);
-  } else {
-    cur_context_ptr->out_dataflow_.resize(1);
-    loops = 1;
-  }
+  cur_context_ptr->out_dataflow_.resize(loops);
+
   std::for_each(
     cur_context_ptr->out_dataflow_.begin(),
     cur_context_ptr->out_dataflow_.end(),
     [&](std::vector<char> &vec) { vec.resize(element_sum_ * sizeof(float)); });
   uint32_t count = 0;
+  tms_start = get_perf_count();
   while (count < loops) {
     PreProcess(cur_context_ptr, count);
     status = vsi_nn_RunGraph(self_graph_);
@@ -105,30 +127,18 @@ int AmlogicEngine::PreProcess(const contextPtr &cur_context_ptr,
   }
   vnn_SetChannelandMean(channel_format, model_cfg_->model_mean_.data(),
                         model_cfg_->model_norm_.data());
-  vsi_nn_tensor_t *tensor;
-  tensor = vsi_nn_GetTensor(self_graph_, self_graph_->input.tensors[0]);
-  uint32_t sz = vsi_nn_GetElementNum(tensor);
-  uint32_t stride = vsi_nn_TypeGetBytes(tensor->attr.dtype.vx_type);
-  uint8_t *dtype_data = (uint8_t *)malloc(stride * sz * sizeof(uint8_t));
-  REPORT_ERROR_IF_NULL(dtype_data);
-  float *input_data = (float *)malloc(sz * sizeof(float));
-  REPORT_ERROR_IF_NULL(input_data);
-  float *transform_data = (float *)malloc(sz * sizeof(float));
-  REPORT_ERROR_IF_NULL(transform_data);
+
   vsi_status status =
     vnn_PreProcessByPixels(self_graph_, cur_context_ptr->dataflow_[0].data(),
-                           input_data, transform_data, dtype_data);
+                           input_data_, transform_data_, dtype_data_);
   if (status != VSI_SUCCESS) {
     LOG(ERROR) << "Preprocess image data failed.";
     return -1;
-  };
+  }
   vx_uint64 tms_end = get_perf_count();
   vx_uint64 ms_val = (tms_end - tms_start) / 1000000;
   LOG(INFO) << "Run " << model_cfg_->model_name_
             << "preprocess cost: " << ms_val << "ms";
-  free(dtype_data);
-  free(input_data);
-  free(transform_data);
   return 0;
 }
 
@@ -142,7 +152,6 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
   for (int i = 0; i < out_num_graph; i++) {
     uint32_t sz = 1, stride;
     uint8_t *tensor_data = NULL;
-
     float *buffer =
       reinterpret_cast<float *>(cur_context_ptr->out_dataflow_[idx].data()) +
       cur_position;
@@ -157,7 +166,6 @@ int AmlogicEngine::PostProcess(const contextPtr &cur_context_ptr,
     } else {
       fl = pow(2., -o_tensor->attr.dtype.fl);
     }
-
     for (int j = 0; j < o_tensor->attr.dim_num; j++) {
       sz *= o_tensor->attr.size[j];
     }

@@ -5,6 +5,7 @@
 #include "common_test.h"
 #include <dirent.h>
 #include <regex>
+#include <map>
 #include "glog/logging.h"
 
 constexpr char kExtenrnMatch[] = ".*\.";
@@ -103,11 +104,16 @@ void CommonTest::GetFileNames(std::string path, const std::string& ext_name,
     LOG(ERROR) << "Folder doesn't Exist!";
     return;
   }
+
+  std::map<uint32_t, std::string> path_map;
   while ((ptr = readdir(pDir)) != 0) {
     if(std::regex_match(ptr->d_name, reg_obj))
     if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0) {
-      filenames->emplace_back(path + "/" + ptr->d_name);
+      path_map[std::stoi(ptr->d_name)] = ptr->d_name;
     }
+  }
+  for (auto item : path_map) {
+      filenames->emplace_back(path + "/" + item.second);
   }
   closedir(pDir);
 }

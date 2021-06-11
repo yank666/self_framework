@@ -3,7 +3,7 @@ set(EXTERNAL_LIB_CMAKE_CXX_COMPILER "${CMAKE_CXX_COMPILER} -Werror")
 
 if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
     set(EXTRA_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_NATIVE_API_LEVEL=android-28
-            -DANDROID_NDK=${ANDROID_NDK} -DANDROID_ABI=armeabi-v7a -DANDROID_TOOLCHAIN_NAME=aarch64-linux-android-clang
+            -DANDROID_NDK=${ANDROID_NDK} -DANDROID_ABI=armeabi-v7a -DANDROID_TOOLCHAIN_NAME=clang
             -DANDROID_STL=c++_shared)
 else()
     set(EXTRA_CMAKE_ARGS "")
@@ -24,7 +24,9 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Glog.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Gtest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Opencv.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_FFmpeg.cmake)
+if (${ENABLE_ENGINE_TYPE} MATCHES "TRT")
+    include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_FFmpeg.cmake)
+endif()
 add_custom_target(third_party ALL DEPENDS ${third_party_deps})
 add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/base64encoding)
 

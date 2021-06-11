@@ -27,7 +27,7 @@ void Pipeline::RegisterStage(const ModelCfgPtr &model_cfg) {
     cur_stage_name, std::make_pair(exec_stage_ptr, stage_context)));
 
   if (current_stage_pos != 0) {
-    for (auto stage : stages_[current_stage_pos - 1]) {
+    for (auto &stage : stages_[current_stage_pos - 1]) {
       stage->ConnectTailStage(cur_stage_name);
     }
   }
@@ -39,14 +39,14 @@ void Pipeline::RegisterEngine(const ModelCfgPtr &model_cfg) {
   contextPtr stage_context = std::make_shared<device::Context>();
   REPORT_EXCEPTION_IF_NULL(stage_context);
 
-  CreateContexts(stage_context, model_cfg);
   model_inference_ptr->FillStagebyEngine(stage_context);
+  uint32_t current_model_pos = model_cfg->model_position_;
+  CreateContexts(stage_context, model_cfg);
+
+  std::string cur_model_name = model_cfg->model_name_;
   DecorStagePtr exec_stage_ptr =
     DeviceInferenceFactory::GetInstance().GetDeviceInference(
-      model_inference_ptr->GetModelName());
-
-  uint32_t current_model_pos = model_cfg->model_position_;
-  std::string cur_model_name = model_cfg->model_name_;
+      cur_model_name);
   if (exec_stage_ptr != nullptr) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
     stages_[current_model_pos].push_back(exec_stage_ptr);
@@ -58,7 +58,7 @@ void Pipeline::RegisterEngine(const ModelCfgPtr &model_cfg) {
       cur_model_name, std::make_pair(model_inference_ptr, stage_context)));
   }
   if (current_model_pos != 0) {
-    for (auto stage : stages_[current_model_pos - 1]) {
+    for (auto &stage : stages_[current_model_pos - 1]) {
       stage->ConnectTailStage(cur_model_name);
     }
   }
@@ -76,7 +76,7 @@ bool Pipeline::CreateContexts(const contextPtr &cur_context_ptr,
   uint32_t input_sum = 1;
   for (auto &inshape : cur_model_cfg->model_inshape_) {
     uint32_t input_sum_temp = std::accumulate(
-      std::begin(inshape), std::end(inshape), 1, std::multiplies<uint32_t>());
+      std::begin(inshape), std::end(inshape), 1, std::multiplies<>());
     input_sum *= input_sum_temp;
     cur_context_ptr->dataflow_[datainput].resize(input_sum);
     std::vector<uint32_t> temp_vec;
@@ -112,7 +112,7 @@ void Pipeline::DeliveryContext(const AbstractStagePtr &cur_staga,
   if (tail_stage_name.empty()) {
     return;
   }
-  for (auto stage_name : tail_stage_name) {
+  for (const auto& stage_name : tail_stage_name) {
     auto tail_context = GetStageContextbyName(stage_name);
     cur_context->TransmitContext(tail_context);
   }
@@ -180,7 +180,7 @@ DeviceStage::DeviceStage(const ModelCfgPtr &model_cfg)
     model_cfg->model_name_, model_cfg->model_type_);
   REPORT_EXCEPTION_IF_NULL(engine_);
   engine_->SetModelCfg(model_cfg);
-};
+}
 
 bool DeviceStage::FillStagebyEngine(const contextPtr &conext_ptr) {
   if (engine_ == nullptr) {

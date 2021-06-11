@@ -1,7 +1,4 @@
 syntax = "proto3";
-
-option optimize_for = LITE_RUNTIME;
-
 package ParserModel;
 
 message BlobShape {
@@ -17,7 +14,7 @@ message normParameter {
 }
 message ModelParameter {
    string name = 1; //consider giving the configParam a name
-  repeated InferConfigParameter infer_config = 10; //ID 10 so inferConfigs are printed last.
+  repeated InferConfigParameter infer_config = 2; //ID 10 so inferConfigs are printed last.
 }
 
 // NOTE

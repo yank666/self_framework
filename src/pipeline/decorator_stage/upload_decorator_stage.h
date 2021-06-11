@@ -7,13 +7,14 @@
 
 #include "src/pipeline/pipeline.h"
 #include "json/json.hpp"
+#include "opencv2/opencv.hpp"
 #include "src/parse/parse_json.h"
 #include "pipeline/decorator_stage/yolo_decorator_stage.h"
 #include "tracker/TrackerLib_api_c.h"
 namespace pipeline {
 using json = nlohmann::ordered_json;
 
-class UploadDerocatestage : public DecoratorStage {
+class  UploadDerocatestage : public DecoratorStage {
  protected:
   bool StagePreProcess(const contextPtr &conext_ptr,
                        const ProcessContextMap &contextMap);
@@ -21,14 +22,15 @@ class UploadDerocatestage : public DecoratorStage {
                         const ProcessContextMap &contextMap);
 
  private:
-  bool InitUpLoadJson(const contextPtr &conext_ptr,
-                      const detect_bbox_info &detect, const PersonInfo &person);
   bool UpdataUpLoadJson(const contextPtr &conext_ptr,
                         const detect_bbox_info &detect,
                         const PersonInfo &person);
-  bool SelectAttrofUploadJson(const contextPtr &conext_ptr,
+  void SelectAttrofUploadJson(const contextPtr &conext_ptr,
                               const detect_bbox_info &detect,
                               const PersonInfo &person);
+  std::string MatBase64Encode(const cv::Mat & src);
+
+  std::string AddValuetoJson(const std::string &val, const std::string &new_val);
   //  json json_val_;
   std::shared_ptr<StreamInfo> stream_info_;
   std::unordered_map<int, json> upload_struct_;

@@ -7,27 +7,24 @@
 #include "opencv2/opencv.hpp"
 
 struct YoloV5Box {
-  float x1;
-  float y1;
-  float x2;
-  float y2;
-  float conf;
+  float x1{0.0f};
+  float y1{0.0f};
+  float x2{0.0f};
+  float y2{0.0f};
+  float conf{0.0f};
 };
 
 struct YoloV5BodyInfo {
-  int type;
   YoloV5Box box;
   YoloV5Box related_box;
   std::vector<std::pair<int, float>> attrs;  // 属性label: 属性score
 };
 
 struct PersonInfo {
-  int32_t label;
+  int32_t label{0};
   YoloV5Box body;
   YoloV5Box head;
   YoloV5Box face;
-
-  std::vector<float> feature;
   bool face_observeed = false;
   bool head_observed = false;
   YoloV5Box hand_packages[10];

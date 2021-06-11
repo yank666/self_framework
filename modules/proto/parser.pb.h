@@ -648,10 +648,10 @@ class ModelParameter PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kInferConfigFieldNumber = 10,
+    kInferConfigFieldNumber = 2,
     kNameFieldNumber = 1,
   };
-  // repeated .ParserModel.InferConfigParameter infer_config = 10;
+  // repeated .ParserModel.InferConfigParameter infer_config = 2;
   int infer_config_size() const;
   private:
   int _internal_infer_config_size() const;
@@ -1269,7 +1269,7 @@ inline void ModelParameter::set_allocated_name(std::string* name) {
   // @@protoc_insertion_point(field_set_allocated:ParserModel.ModelParameter.name)
 }
 
-// repeated .ParserModel.InferConfigParameter infer_config = 10;
+// repeated .ParserModel.InferConfigParameter infer_config = 2;
 inline int ModelParameter::_internal_infer_config_size() const {
   return infer_config_.size();
 }

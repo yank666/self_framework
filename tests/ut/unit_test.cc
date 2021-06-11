@@ -24,6 +24,25 @@ class Unit : public CommonTest  {
   ~Unit() = default;
 };
 
+TEST_F(Unit, parse) {
+  std::string model_cfg_file = "models.cfg";
+  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  ASSERT_EQ(0, ret);
+  LOG(INFO) << "Run SUCCESS!";
+}
+
+TEST_F(Unit, init) {
+  std::string model_cfg_file = "models.cfg";
+  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  ASSERT_EQ(0, ret);
+  auto pipeline_ptr = std::make_shared<Pipeline>();
+  ASSERT_NE(nullptr, pipeline_ptr);
+  pipeline_ptr->InitPipeline(cfg_vec);
+  LOG(INFO) << "Run SUCCESS!";
+}
+
 TEST_F(Unit, yolodecorator) {
   char *in = nullptr;
   const uint32_t kInputSize = 333396;
@@ -118,6 +137,11 @@ TEST_F(Unit, parsejson) {
   auto stream_info = std::make_shared<StreamInfo>();
   auto ret = ParseJson::ParseVideoJson(const_cast<char *>(streamInfo.data()), stream_info);
   ASSERT_EQ(0, ret);
+  nlohmann::ordered_json json_val;
+  json_val["fuck BUG"] = 1;
+  std::ofstream file("./key.json");
+  file << std::setw(4) << json_val;
+  file.close();
   LOG(INFO) << "Run SUCCESS!";
 }
 

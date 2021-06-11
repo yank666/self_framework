@@ -13,7 +13,7 @@ namespace device {
 class AmlogicEngine : public AbstractEngine {
  public:
   AmlogicEngine(ModelCfgPtr model_cfg_ptr) : AbstractEngine(model_cfg_ptr) {}
-  ~AmlogicEngine();
+  virtual ~AmlogicEngine();
   int CreateGraph(const contextPtr &cur_context_ptr);
   int RunProcess(const contextPtr &cur_context_ptr);
   virtual vsi_nn_graph_t *InitModel(std::string binary_path) { return nullptr; }
@@ -23,6 +23,10 @@ class AmlogicEngine : public AbstractEngine {
  protected:
   uint64_t element_sum_{0};
   vsi_nn_graph_t *self_graph_ = NULL;
+  uint8_t *dtype_data_{nullptr};
+  float *input_data_{nullptr};
+  float *transform_data_{nullptr};
+
 };
 }  // namespace device
 #endif  // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H

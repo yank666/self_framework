@@ -36,6 +36,17 @@ inline bool PointInPolygon(const cv::Point2f &pt,
   return inside;
 }
 
+std::string UploadDerocatestage::MatBase64Encode(const cv::Mat &src) {
+  std::vector<uchar> data_encode;
+  cv::imencode(".jpg", src, data_encode);
+  return base64_encode(data_encode.data(), data_encode.size());
+}
+
+inline std::string UploadDerocatestage::AddValuetoJson(
+  const std::string &val, const std::string &new_val) {
+  return val + new_val + ";";
+}
+
 bool UploadDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
                                           const ProcessContextMap &contextMap) {
   REPORT_EXCEPTION_IF_NULL(conext_ptr);
@@ -75,153 +86,154 @@ bool UploadDerocatestage::StagePostProcess(
     memcpy(&(detect_infos[i]), det_context->out_dataflow_[i].data(),
            det_context->out_dataflow_[i].size());
   }
+
   for (uint32_t idx = 0; idx < obj.num_detections; ++idx) {
+    json json_val;
     uint32_t cur_id = obj.detect_res_info[idx].track_id;
     if (cur_id == -1) {
       continue;
     }
-    if (upload_struct_.count(cur_id) == 0) {
-      InitUpLoadJson(conext_ptr, obj.detect_res_info[idx], detect_infos[idx]);
-    } else {
-      UpdataUpLoadJson(conext_ptr, obj.detect_res_info[idx], detect_infos[idx]);
-    }
+    //    if (upload_struct_.count(cur_id) == 0) {
+    //      InitUpLoadJson(&json_val, conext_ptr, obj.detect_res_info[idx],
+    //                     detect_infos[idx]);
+    //      LOG(ERROR) << "=========Upload init==========================";
+    //    } else {
+    //      UpdataUpLoadJson(conext_ptr, obj.detect_res_info[idx],
+    //      detect_infos[idx]); LOG(ERROR) << "=========Upload
+    //      update==========================";
+    //    }
+    UpdataUpLoadJson(conext_ptr, obj.detect_res_info[idx], detect_infos[idx]);
     SelectAttrofUploadJson(conext_ptr, obj.detect_res_info[idx],
                            detect_infos[idx]);
+    LOG(ERROR) << "=========Upload select11111111111==========================";
   }
-  //  std::fstream file("key.json");
-  //  file << std::setw(4) << jsonfile;
+
+  for (auto &json_item : upload_struct_) {
+    std::ofstream file(std::to_string(json_item.first) + "key.json");
+    file << std::setw(4) << json_item.second << std::endl;
+    file.close();
+  }
   LOG(INFO) << "Run Upload PostDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
 
-bool UploadDerocatestage::InitUpLoadJson(const contextPtr &conext_ptr,
-                                         const detect_bbox_info &detect,
-                                         const PersonInfo &person) {
-  json json_val_;
-  json_val_["statusCode"] = status_Success;
-  json_val_["streamId"] = conext_ptr->stream_id_;
-  json_val_["equipmentId"] = conext_ptr->equipment_id_;
-  json_val_["id"] = detect.track_id;
-  json_val_["startTimestamp"] = conext_ptr->time_stamp_;
-  json_val_["bodyIsObserved"] = true;
-  cv::Mat src = cv::Mat(conext_ptr->input_h, conext_ptr->input_w, CV_8UC3,
-                        conext_ptr->ori_data[0].data());
-  cv::Mat roi =
-    src(cv::Rect(detect.box.x1, detect.box.y1, detect.box.x2 - detect.box.x1,
-                 detect.box.y2 - detect.box.y1));
-  json_val_["bodyInfo"]["croppedPicBase64"] =
-    base64_encode(roi.data, roi.rows * roi.cols * 3);
-  json_val_["bodyInfo"]["feat"] = detect.feature;
-  json_val_["bodyInfo"]["box"] = {detect.box.x1, detect.box.y1, detect.box.x2,
-                                  detect.box.y2};
-  json_val_["bodyInfo"]["selectedTimestamp"] = conext_ptr->time_stamp_;
-  json_val_["bodyInfo"]["bodyProb"] = detect.prob;
-  json_val_["bodyInfo"]["bodyTrailNum"] = 1;
-  json_val_["bodyInfo"]["bodyTrailPointTime"].push_back(
-    conext_ptr->time_stamp_);
-  json_val_["bodyInfo"]["bodyTrailLeftTopX"].push_back(detect.box.x1);
-  json_val_["bodyInfo"]["bodyTrailLeftTopY"].push_back(detect.box.y1);
-  json_val_["bodyInfo"]["bodyTrailRightBtmX"].push_back(detect.box.x2);
-  json_val_["bodyInfo"]["bodyTrailRightBtmY"].push_back(detect.box.y2);
-  if (person.face_observeed) {
-    json_val_["faceIsObserved"] = true;
-    cv::Mat face = src(cv::Rect(person.face.x1, person.face.y1,
-                                person.face.x2 - person.face.x1,
-                                person.face.y2 - person.face.y1));
-    json_val_["faceInfo"]["croppedPicBase64"] =
-      base64_encode(face.data, face.rows * face.cols * 3);
-    ;
-    json_val_["faceInfo"]["feat"];
-    json_val_["faceInfo"]["box"] = {person.face.x1, person.face.y1,
-                                    person.face.x2, person.face.y2};
-    json_val_["faceInfo"]["selectedTimestamp"] = conext_ptr->time_stamp_;
-    json_val_["faceInfo"]["faceProb"] = person.face.conf;
-  }
-  if (0 != person.hand_packages_nums) {
-    for (int cnt = 0; cnt < person.hand_packages_nums; cnt++) {
-      json_val_["handpackageInfo"]["handpackageTrailNum"] += 1;
-      json_val_["handpackageInfo"]["handpackageTrailPointTime"].push_back(
-        conext_ptr->time_stamp_);
-      json_val_["handpackageInfo"]["handpackageTrailLeftTopX"];
-      json_val_["handpackageInfo"]["handpackageTrailLeftTopY"];
-      json_val_["handpackageInfo"]["handpackageTrailRightBtmX"];
-      json_val_["handpackageInfo"]["handpackageTrailRightBtmY"];
-    }
-  }
-  uint32_t cur_id = detect.track_id;
-  upload_struct_[cur_id] = json_val_;
-}
-
 bool UploadDerocatestage::UpdataUpLoadJson(const contextPtr &conext_ptr,
                                            const detect_bbox_info &detect,
                                            const PersonInfo &person) {
+  json json_val;
+  uint32_t body_count = 0, handpk_count = 0;
+  std::string body_time, body_ltx, body_lty, body_rbx, body_rby;
+  std::string handpk_time, handpk_ltx, handpk_lty, handpk_rbx, handpk_rby;
+  float cur_body_prob = 0.0f, cur_face_prob = 0.0f;
+  long endtime_stamp;
   uint32_t cur_id = detect.track_id;
-  auto json_val = upload_struct_[cur_id];
-  json_val["bodyInfo"]["bodyTrailNum"] += 1;
-  json_val["bodyInfo"]["bodyTrailPointTime"].push_back(conext_ptr->time_stamp_);
-  json_val["bodyInfo"]["bodyTrailLeftTopX"].push_back(detect.box.x1);
-  json_val["bodyInfo"]["bodyTrailLeftTopY"].push_back(detect.box.y1);
-  json_val["bodyInfo"]["bodyTrailRightBtmX"].push_back(detect.box.x2);
-  json_val["bodyInfo"]["bodyTrailRightBtmY"].push_back(detect.box.y2);
-  if (detect.prob > json_val["bodyInfo"]["bodyProb"]) {
+  cv::Mat src = cv::Mat(conext_ptr->input_h, conext_ptr->input_w, CV_8UC3,
+                        conext_ptr->ori_data[0].data());
+  if (upload_struct_.count(cur_id) != 0) {
+    json_val = upload_struct_[cur_id];
+    body_count = json_val["bodyInfo"]["bodyTrailNum"];
+    body_time = json_val["bodyInfo"]["bodyTrailPointTime"];
+    body_ltx = json_val["bodyInfo"]["bodyTrailLeftTopX"];
+    body_lty = json_val["bodyInfo"]["bodyTrailLeftTopY"];
+    body_rbx = json_val["bodyInfo"]["bodyTrailRightBtmX"];
+    body_rby = json_val["bodyInfo"]["bodyTrailRightBtmY"];
+    cur_body_prob = json_val["bodyInfo"]["bodyProb"];
+
+    cur_face_prob = json_val["faceInfo"]["faceProb"];
+
+    handpk_count = json_val["handpackageInfo"]["handpackageTrailNum"];
+    handpk_time = json_val["handpackageInfo"]["handpackageTrailPointTime"];
+    handpk_ltx = json_val["handpackageInfo"]["handpackageTrailLeftTopX"];
+    handpk_lty = json_val["handpackageInfo"]["handpackageTrailLeftTopY"];
+    handpk_rbx = json_val["handpackageInfo"]["handpackageTrailRightBtmX"];
+    handpk_rby = json_val["handpackageInfo"]["handpackageTrailRightBtmY"];
+  } else {
+    json_val["statusCode"] = status_Success;
+    json_val["streamId"] = conext_ptr->stream_id_;
+    json_val["equipmentId"] = conext_ptr->equipment_id_;
+    json_val["id"] = cur_id;
+    json_val["bodyIsObserved"] = true;
+    json_val["startTimestamp"] = conext_ptr->time_stamp_;
+    json_val["bodyIsObserved"] = true;
+    json_val["handpackageInfo"]["handpackageTrailNum"] = 0;
+    json_val["handpackageInfo"]["handpackageTrailPointTime"] = "";
+    json_val["handpackageInfo"]["handpackageTrailLeftTopX"] = "";
+    json_val["handpackageInfo"]["handpackageTrailLeftTopY"] = "";
+    json_val["handpackageInfo"]["handpackageTrailRightBtmX"] = "";
+    json_val["handpackageInfo"]["handpackageTrailRightBtmY"] = "";
+  }
+  json_val["endTimestamp"] = conext_ptr->time_stamp_;
+  json_val["bodyInfo"]["bodyTrailNum"] = ++body_count;
+  json_val["bodyInfo"]["bodyTrailPointTime"] =
+    AddValuetoJson(body_time, std::to_string(conext_ptr->time_stamp_));
+  json_val["bodyInfo"]["bodyTrailLeftTopX"] =
+    AddValuetoJson(body_ltx, std::to_string(detect.box.x1));
+  json_val["bodyInfo"]["bodyTrailLeftTopY"] =
+    AddValuetoJson(body_lty, std::to_string(detect.box.y1));
+  json_val["bodyInfo"]["bodyTrailRightBtmX"] =
+    AddValuetoJson(body_rbx, std::to_string(detect.box.x2));
+  json_val["bodyInfo"]["bodyTrailRightBtmY"] =
+    AddValuetoJson(body_rby, std::to_string(detect.box.y2));
+  json_val["bodyInfo"]["bodyQuality"] = detect.quality;
+  { // no use ,but need to set
+    json_val["bodyInfo"]["bodyAttributes"] = "";
+    json_val["bodyInfo"]["faceKeypointQuality"] = "";
+    json_val["bodyInfo"]["feat"] = "";
+    json_val["bodyInfo"]["faceQuality"] = "";
+  }
+  if (detect.prob > cur_body_prob) {
     json_val["bodyInfo"]["bodyProb"] = detect.prob;
     json_val["bodyInfo"]["selectedTimestamp"] = conext_ptr->time_stamp_;
     json_val["bodyInfo"]["feat"] = detect.feature;
-    json_val["faceInfo"]["box"] = {person.face.x1, person.face.y1,
-                                   person.face.x2, person.face.y2};
-    cv::Mat src = cv::Mat(conext_ptr->input_h, conext_ptr->input_w, CV_8UC3,
-                          conext_ptr->ori_data[0].data());
+    json_val["bodyInfo"]["box"] = {person.body.x1, person.body.y1,
+                                   person.body.x2, person.body.y2};
+
     cv::Mat roi =
       src(cv::Rect(detect.box.x1, detect.box.y1, detect.box.x2 - detect.box.x1,
-                   detect.box.y2 - detect.box.y1));
-    json_val["bodyInfo"]["croppedPicBase64"] =
-      base64_encode(roi.data, roi.rows * roi.cols * 3);
+                   detect.box.y2 - detect.box.y1)).clone();
+    json_val["bodyInfo"]["croppedPicBase64"] = MatBase64Encode(roi);
   }
-
-  // TODO : add person.face.conf is whether is null;
-
-  if (person.face.conf > json_val["faceInfo"]["faceProb"]) {
-    cv::Mat src = cv::Mat(conext_ptr->input_h, conext_ptr->input_w, CV_8UC3,
-                          conext_ptr->ori_data[0].data());
-    cv::Mat face = src(cv::Rect(person.face.x1, person.face.y1,
-                                person.face.x2 - person.face.x1,
-                                person.face.y2 - person.face.y1));
-    json_val["faceInfo"]["croppedPicBase64"] =
-      base64_encode(face.data, face.rows * face.cols * 3);
-    ;
-    json_val["faceInfo"]["feat"];
-    json_val["faceInfo"]["box"] = {person.face.x1, person.face.y1,
-                                   person.face.x2, person.face.y2};
-    json_val["faceInfo"]["selectedTimestamp"] = conext_ptr->time_stamp_;
-    json_val["faceInfo"]["faceProb"] = person.face.conf;
-  }
-  if (0 != person.hand_packages_nums) {
-    for (int cnt = 0; cnt < person.hand_packages_nums; cnt++) {
-      json_val["handpackageInfo"]["handpackageTrailNum"] += 1;
-      json_val["handpackageInfo"]["handpackageTrailPointTime"].push_back(
-        conext_ptr->time_stamp_);
-      json_val["handpackageInfo"]["handpackageTrailLeftTopX"].push_back(
-        person.hand_packages[cnt].x1);
-      json_val["handpackageInfo"]["handpackageTrailLeftTopY"].push_back(
-        person.hand_packages[cnt].y1);
-      json_val["handpackageInfo"]["handpackageTrailRightBtmX"].push_back(
-        person.hand_packages[cnt].x2);
-      json_val["handpackageInfo"]["handpackageTrailRightBtmY"].push_back(
-        person.hand_packages[cnt].y2);
+  if (person.face_observeed) {
+    json_val["faceIsObserved"] = true;
+    if (person.face_observeed && person.face.conf > cur_face_prob) {
+      cv::Mat face = src(cv::Rect(person.face.x1, person.face.y1,
+                                  person.face.x2 - person.face.x1,
+                                  person.face.y2 - person.face.y1))
+                       .clone();
+      json_val["faceInfo"]["croppedPicBase64"] = MatBase64Encode(face);
+      json_val["faceInfo"]["box"] = {person.face.x1, person.face.y1,
+                                     person.face.x2, person.face.y2};
+      json_val["faceInfo"]["selectedTimestamp"] = conext_ptr->time_stamp_;
+      json_val["faceInfo"]["faceProb"] = person.face.conf;
     }
   }
+
+  for (int cnt = 0; cnt < person.hand_packages_nums; cnt++) {
+    json_val["handpackageInfo"]["handpackageTrailNum"] = ++handpk_count;
+    json_val["handpackageInfo"]["handpackageTrailPointTime"] =
+      AddValuetoJson(handpk_time, std::to_string(conext_ptr->time_stamp_));
+    json_val["handpackageInfo"]["handpackageTrailLeftTopX"] =
+      AddValuetoJson(handpk_ltx, std::to_string(person.hand_packages[cnt].x1));
+    json_val["handpackageInfo"]["handpackageTrailLeftTopY"] =
+      AddValuetoJson(handpk_lty, std::to_string(person.hand_packages[cnt].y1));
+    json_val["handpackageInfo"]["handpackageTrailRightBtmX"] =
+      AddValuetoJson(handpk_rbx, std::to_string(person.hand_packages[cnt].x2));
+    json_val["handpackageInfo"]["handpackageTrailRightBtmY"] =
+      AddValuetoJson(handpk_rby, std::to_string(person.hand_packages[cnt].y2));
+  }
+
+  upload_struct_[cur_id] = json_val;
+  return true;
 }
-bool UploadDerocatestage::SelectAttrofUploadJson(const contextPtr &conext_ptr,
+
+void UploadDerocatestage::SelectAttrofUploadJson(const contextPtr &conext_ptr,
                                                  const detect_bbox_info &detect,
                                                  const PersonInfo &person) {
   uint32_t cur_id = detect.track_id;
   auto json_val = upload_struct_[cur_id];
-  if (cur_id == -1) {
-    return true;
-  }
-  std::vector<cv::Point2f> bbox;
 
+  std::vector<cv::Point2f> bbox;
   for (int regionIdx = 0; regionIdx < stream_info_->config.size();
        regionIdx++) {
     bool is_in_poly = false;
@@ -230,10 +242,17 @@ bool UploadDerocatestage::SelectAttrofUploadJson(const contextPtr &conext_ptr,
         PointInPolygon(bbox[j], stream_info_->config[regionIdx].polygon) ||
         is_in_poly;
     }
-    if (is_in_poly) {
+    if (true) {
       std::string shape_type = stream_info_->config[regionIdx].shapeType;
-      json_val["attributes"][shape_type] += 1;
-      //      json_val["regionSnapshots"][shape_type]["imgae"];
+      if (!json_val["attributes"].contains(shape_type)) {
+        json_val["attributes"][shape_type] = 1;
+      } else {
+        uint32_t shape_count = json_val["attributes"][shape_type];
+        shape_count += 1;
+        json_val["attributes"][shape_type] = shape_count;
+      }
+      json_val["regionSnapshots"][shape_type]["imgae"] =
+        json_val["bodyInfo"]["croppedPicBase64"];
       if (json_val["regionSnapshots"][shape_type]["startTimestamp"].empty()) {
         json_val["regionSnapshots"][shape_type]["startTimestamp"] =
           conext_ptr->time_stamp_;
@@ -242,6 +261,7 @@ bool UploadDerocatestage::SelectAttrofUploadJson(const contextPtr &conext_ptr,
         conext_ptr->time_stamp_;
     }
   }
+  upload_struct_[cur_id] = json_val;
 }
 
 REG_Stage(upload, std::make_shared<UploadDerocatestage>())

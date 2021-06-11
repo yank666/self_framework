@@ -9,7 +9,9 @@
 #include "src/utils/common_struct.h"
 
 namespace pipeline {
-TrackerDerocatestage::TrackerDerocatestage() {}
+TrackerDerocatestage::TrackerDerocatestage() {
+  frame_idx_ = 0;
+}
 
 TrackerDerocatestage::~TrackerDerocatestage() {
   if (tracker_api != nullptr) {
@@ -25,7 +27,7 @@ bool TrackerDerocatestage::StagePreProcess(
   if (tracker_api == nullptr) {
     tracker_api = tracker_init_with_config("config_person_mobile.json");
   }
-  LOG(INFO) << "Run Tracker predecorate stage run success, cost"
+  DLOG(INFO) << "Run Tracker predecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
@@ -35,8 +37,7 @@ bool TrackerDerocatestage::StagePostProcess(
   REPORT_ERROR_IF_NULL(conext_ptr);
   TimeWatch time_watch;
   time_watch.start();
-  detect_res body_det;
-  detect_res body_track;
+  detect_res body_det, body_track;
   body_det.num_detections = 0;
   body_track.num_detections = 0;
   auto det_iter = contextMap.find("yolo");
@@ -51,6 +52,14 @@ bool TrackerDerocatestage::StagePostProcess(
     memcpy(&(detect_infos[i]), det_context->out_dataflow_[i].data(),
            det_context->out_dataflow_[i].size());
   }
+
+  auto reid_iter = contextMap.find("reid");
+  if (reid_iter == contextMap.end()) {
+    return false;
+  }
+  auto reid_context = reid_iter->second.second;
+  REPORT_EXCEPTION_IF_NULL(reid_context);
+
   for (auto idx = 0; idx < detect_infos.size(); idx++) {
     body_det.detect_res_info[body_det.num_detections].track_id = -1;
     body_det.detect_res_info[body_det.num_detections].label = 0;
@@ -66,20 +75,24 @@ bool TrackerDerocatestage::StagePostProcess(
       detect_infos[idx].body.x2;
     body_det.detect_res_info[body_det.num_detections].box.y2 =
       detect_infos[idx].body.y2;
+    body_det.detect_res_info[body_det.num_detections].feature_len =
+      reid_context->out_dataflow_[idx].size() /sizeof (float);
+    memcpy(body_det.detect_res_info[body_det.num_detections].feature,
+           reid_context->out_dataflow_[idx].data(),
+           reid_context->out_dataflow_[idx].size());
     body_det.num_detections++;
   }
   cv::Mat img = cv::Mat(conext_ptr->input_h, conext_ptr->input_w, CV_8UC3,
                         conext_ptr->ori_data[0].data(),
                         conext_ptr->input_w * 3 * sizeof(uint8_t));
   cv::Mat clone = img.clone();
-  tracker_inference(&body_det, &body_track, 0, clone.data, clone.cols,
+  tracker_inference(&body_det, &body_track, frame_idx_++, clone.data, clone.cols,
                     clone.rows, 3, tracker_api);
   conext_ptr->out_dataflow_.clear();
   conext_ptr->out_dataflow_.resize(1);
   conext_ptr->out_dataflow_[0].resize(sizeof(detect_res));
   memcpy(conext_ptr->out_dataflow_[0].data(), &body_track, sizeof(detect_res));
-  LOG(INFO) << "tracker output size is :" << sizeof(detect_res);
-  LOG(INFO) << "Run Tracker postdecorate stage run success, cost"
+  DLOG(INFO) << "Run Tracker postdecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }

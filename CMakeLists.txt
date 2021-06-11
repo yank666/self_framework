@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(Self_Architecture)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread -Wno-deprecated-declarations")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread -Wno-deprecated-declarations")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpic -pthread -Wno-deprecated-declarations -g -ggdb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpic -pthread -Wno-deprecated-declarations  -g -ggdb")
 
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_SuperBuild.cmake)
 
@@ -22,6 +22,9 @@ foreach(fil ${proto_files})
     list(APPEND srcs_var "${CMAKE_CURRENT_SOURCE_DIR}/modules/proto/${fil_we}.pb.cc")
     list(APPEND hdrs_var "${CMAKE_CURRENT_SOURCE_DIR}/modules/proto/${fil_we}.pb.h")
 endforeach()
+
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 
 add_subdirectory(thirdparty/tracker)
 add_subdirectory(src/pipeline)

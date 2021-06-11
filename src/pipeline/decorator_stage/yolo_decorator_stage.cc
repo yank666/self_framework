@@ -23,6 +23,7 @@ inline float StrictScale(float input, float max) {
 const float kConfThreshold = 0.3f;
 const float kIouThreshold = 0.5f;
 const float kBoxThreshold = 0.3f;
+const uint32_t kTotalOut = 333396;
 
 enum YoloInputDesc : int {
   kInb = 1,
@@ -142,7 +143,7 @@ bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
   time_watch.start();
   MakeGridNp();
 
-  LOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
+  DLOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
@@ -313,7 +314,6 @@ void YoloDerocatestage::ObtainBoxAndScore(
     }
     YoloV5BodyInfo body_info;
     body_info.box.conf = score_max;
-    body_info.type = max_score_idx - 1;
     body_info.box.x1 =
       StrictScale(output[idx * kOutActualShape[0][3] + 0] -
                     output[idx * kOutActualShape[0][3] + 2] / 2,
@@ -339,7 +339,7 @@ void YoloDerocatestage::ObtainBoxAndScore(
     body_info.related_box.x2 =
       StrictScale(body_info.related_box.x1 +
                     output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3],
-                  kInw);
+                  kInw);;
     body_info.related_box.y2 =
       StrictScale(body_info.related_box.y1 +
                     output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4],
@@ -618,6 +618,10 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   TimeWatch time_watch;
   time_watch.start();
   auto outputs_vecs = conext_ptr->out_dataflow_;
+  if (outputs_vecs.size() != 1 || outputs_vecs[0].size() != kTotalOut * sizeof(float)) {
+    LOG(ERROR) << "YoloDerocatestage get error input!";
+    return false;
+  }
   std::vector<float> output;
   std::vector<std::vector<YoloV5BodyInfo>> nms_boxes_vec;
   float *inputarray[kOutCnt];
@@ -642,7 +646,7 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
                    std::memcpy(flow.data(), &info, sizeof(PersonInfo));
                    return flow;
                  });
-
+  DLOG(INFO) << "Run Yolo Output size is :" << associate_vec->size();
   LOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;

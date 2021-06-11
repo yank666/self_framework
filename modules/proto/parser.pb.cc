@@ -164,7 +164,7 @@ const char descriptor_table_protodef_parser_2eproto[] PROTOBUF_SECTION_VARIABLE(
   "\022\017\n\003dim\030\001 \003(\003B\002\020\001\"\035\n\rmeanParameter\022\014\n\004me"
   "an\030\001 \003(\002\"\035\n\rnormParameter\022\014\n\004norm\030\001 \003(\002\""
   "W\n\016ModelParameter\022\014\n\004name\030\001 \001(\t\0227\n\014infer"
-  "_config\030\n \003(\0132!.ParserModel.InferConfigP"
+  "_config\030\002 \003(\0132!.ParserModel.InferConfigP"
   "arameter\"\237\003\n\024InferConfigParameter\022\014\n\004nam"
   "e\030\001 \001(\t\022\031\n\021infer_config_type\030\002 \001(\t\022\022\n\nin"
   "fer_type\030\003 \001(\t\022\037\n\027model_input_data_forma"
@@ -866,16 +866,16 @@ const char* ModelParameter::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // repeated .ParserModel.InferConfigParameter infer_config = 10;
-      case 10:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 82)) {
+      // repeated .ParserModel.InferConfigParameter infer_config = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
           ptr -= 1;
           do {
             ptr += 1;
             ptr = ctx->ParseMessage(_internal_add_infer_config(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<82>(ptr));
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
         } else goto handle_unusual;
         continue;
       default: {
@@ -916,12 +916,12 @@ failure:
         1, this->_internal_name(), target);
   }
 
-  // repeated .ParserModel.InferConfigParameter infer_config = 10;
+  // repeated .ParserModel.InferConfigParameter infer_config = 2;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_infer_config_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(10, this->_internal_infer_config(i), target, stream);
+      InternalWriteMessage(2, this->_internal_infer_config(i), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -940,7 +940,7 @@ size_t ModelParameter::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated .ParserModel.InferConfigParameter infer_config = 10;
+  // repeated .ParserModel.InferConfigParameter infer_config = 2;
   total_size += 1UL * this->_internal_infer_config_size();
   for (const auto& msg : this->infer_config_) {
     total_size +=

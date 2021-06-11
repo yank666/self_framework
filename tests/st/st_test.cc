@@ -49,9 +49,7 @@ TEST_F(BenchMark, init) {
   ASSERT_EQ(0, ret);
   auto pipeline_ptr = std::make_shared<Pipeline>();
   ASSERT_NE(nullptr, pipeline_ptr);
-  std::vector<uint32_t> input_size;
   pipeline_ptr->InitPipeline(cfg_vec);
-  pipeline_ptr->RunPipeline();
   LOG(INFO) << "Run SUCCESS!";
 }
 
@@ -99,7 +97,7 @@ TEST_F(BenchMark, video) {
   int ret = 0;
   std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
   ASSERT_NE(stream_ptr, nullptr);
-  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoFromStream, stream_ptr, "video.avi", 0));
+  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoFromStream, stream_ptr, "/home/yankai.yan/workbase/codeLib/refactor/tests/bin/video.avi", 0));
   ASSERT_EQ(ret, 0);
   while(!stream_ptr->GetReady()) {
     sleep(1);
@@ -114,36 +112,8 @@ TEST_F(BenchMark, video) {
     if (!stream_ptr->GetParseDate(img)) {
       continue;
     }
-    DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
-    count_run_turn++;
-  }
-
-  thread_stream.join();
-  LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
-}
-
-TEST_F(BenchMark, ffmpeg) {
-  LOG(INFO) << "Begin BenchMark.ffmpeg test";
-  int ret = 0;
-  std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
-  ASSERT_NE(stream_ptr, nullptr);
-  const std::string file_path = "/home/yankai.yan/workbase/codeLib/refactor/tests/bin/video.avi";
-  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoByFFmpeg, stream_ptr, file_path));
-  ASSERT_EQ(ret, 0);
-  while(!stream_ptr->GetReady() ) {
-    sleep(1);
-    if (stream_ptr->stop_) {
-      LOG(INFO) << "Parse by ffmpeg fail, parse video quit early!";
-      return;
-    }
-  }
-  int count_run_turn  = 0;
-  LOG(INFO) << "SUCCESS at get ready";
-  int break_flag = 0;
-  while(!stream_ptr->stop_ && stream_ptr->GetReady()) {
-    cv::Mat img;
-    if (!stream_ptr->GetParseDate(img)) {
-      continue;
+    if (count_run_turn % 1 == 0) {
+      cv::imwrite("./out/" + std::to_string(count_run_turn) + ".jpg", img);
     }
     DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
     count_run_turn++;
@@ -152,3 +122,66 @@ TEST_F(BenchMark, ffmpeg) {
   thread_stream.join();
   LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
 }
+
+TEST_F(BenchMark, multiimg) {
+  std::vector<std::string> name_vec;
+  GetFileNames("./out", "jpg",
+               &name_vec);
+  LOG(INFO) << "Total image size is: " << name_vec.size();
+
+  const uint32_t kInputSize = 1280 * 720 * 3;
+  std::vector<uint32_t> input_size;
+  input_size.push_back(kInputSize * sizeof(uint8_t));
+
+  std::string model_cfg_file = "./models.cfg";
+  std::vector<pipeline::ModelCfgPtr> cfg_vec;
+  int ret = ParseConfig::ParseConfigFromProto(model_cfg_file, &cfg_vec);
+  ASSERT_EQ(0, ret);
+  auto pipeline_ptr = std::make_shared<Pipeline>();
+  ASSERT_NE(nullptr, pipeline_ptr);
+  pipeline_ptr->InitPipeline(cfg_vec);
+  uint32_t turns = 0;
+  cv::Mat out;
+  for (auto name : name_vec) {
+    cv::Mat img = cv::imread(name);
+    cv::resize(img, out, cv::Size(672, 384));
+    LOG(INFO) <<"=================" << name << "========================";
+    pipeline_ptr->PushDatatoPipeline((char **)&(out.data), input_size, out.cols, out.rows);
+    pipeline_ptr->RunPipeline();
+    LOG(INFO) << "=================" <<" Complete turn :" << turns<< "========================";
+    turns++;
+  }
+  LOG(INFO) << "Run SUCCESS!";
+}
+
+//TEST_F(BenchMark, ffmpeg) {
+//  LOG(INFO) << "Begin BenchMark.ffmpeg test";
+//  int ret = 0;
+//  std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
+//  ASSERT_NE(stream_ptr, nullptr);
+//  const std::string file_path = "/home/yankai.yan/workbase/codeLib/refactor/tests/bin/video.avi";
+//  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoByFFmpeg, stream_ptr, file_path));
+//  ASSERT_EQ(ret, 0);
+//  while(!stream_ptr->GetReady() ) {
+//    sleep(1);
+//    if (stream_ptr->stop_) {
+//      LOG(INFO) << "Parse by ffmpeg fail, parse video quit early!";
+//      return;
+//    }
+//  }
+//  int count_run_turn  = 0;
+//  LOG(INFO) << "SUCCESS at get ready";
+//  int break_flag = 0;
+//  while(!stream_ptr->stop_ && stream_ptr->GetReady()) {
+//    cv::Mat img;
+//    if (!stream_ptr->GetParseDate(img)) {
+//      continue;
+//    }
+//    cv::imwrite("./out/" + std::to_string(count_run_turn)+ "_.jpg", img);
+//    DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
+//    count_run_turn++;
+//  }
+//
+//  thread_stream.join();
+//  LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
+//}

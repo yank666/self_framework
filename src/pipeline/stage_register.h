@@ -20,10 +20,10 @@ class DeviceInferenceFactory {
     return instance;
   }
 
-  std::shared_ptr<DecoratorStage> GetDeviceInference(std::string name) {
+  std::shared_ptr<DecoratorStage> GetDeviceInference(const std::string &name) {
     auto iter = inference_creator_.find(name);
     if (iter == inference_creator_.end()) {
-      LOG(ERROR) << "DeviceInferenceFactory can't find " << iter->first;
+      DLOG(ERROR) << "DeviceInferenceFactory can't find " << name;
       return nullptr;
     }
     return iter->second;
