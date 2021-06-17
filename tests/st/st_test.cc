@@ -154,34 +154,35 @@ TEST_F(BenchMark, multiimg) {
   LOG(INFO) << "Run SUCCESS!";
 }
 
-//TEST_F(BenchMark, ffmpeg) {
-//  LOG(INFO) << "Begin BenchMark.ffmpeg test";
-//  int ret = 0;
-//  std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
-//  ASSERT_NE(stream_ptr, nullptr);
-//  const std::string file_path = "/home/yankai.yan/workbase/codeLib/refactor/tests/bin/video.avi";
-//  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoByFFmpeg, stream_ptr, file_path));
-//  ASSERT_EQ(ret, 0);
-//  while(!stream_ptr->GetReady() ) {
-//    sleep(1);
-//    if (stream_ptr->stop_) {
-//      LOG(INFO) << "Parse by ffmpeg fail, parse video quit early!";
-//      return;
-//    }
-//  }
-//  int count_run_turn  = 0;
-//  LOG(INFO) << "SUCCESS at get ready";
-//  int break_flag = 0;
-//  while(!stream_ptr->stop_ && stream_ptr->GetReady()) {
-//    cv::Mat img;
-//    if (!stream_ptr->GetParseDate(img)) {
-//      continue;
-//    }
-//    cv::imwrite("./out/" + std::to_string(count_run_turn)+ "_.jpg", img);
-//    DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
-//    count_run_turn++;
-//  }
-//
-//  thread_stream.join();
-//  LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
-//}
+TEST_F(BenchMark, ffmpeg) {
+  LOG(INFO) << "Begin BenchMark.ffmpeg test";
+  int ret = 0;
+  std::shared_ptr<ParseVideo> stream_ptr = std::make_shared<ParseVideo>();
+  ASSERT_NE(stream_ptr, nullptr);
+  const std::string file_path = "video.avi";
+  std::thread thread_stream(std::bind(&ParseVideo::ParseVideoByFFmpeg, stream_ptr, file_path));
+  ASSERT_EQ(ret, 0);
+  while(!stream_ptr->GetReady() ) {
+    sleep(1);
+    if (stream_ptr->stop_) {
+      LOG(INFO) << "Parse by ffmpeg fail, parse video quit early!";
+      thread_stream.join();
+      ASSERT_EQ(1,0);
+    }
+  }
+  int count_run_turn  = 0;
+  LOG(INFO) << "SUCCESS at get ready";
+  int break_flag = 0;
+  while(!stream_ptr->stop_ && stream_ptr->GetReady()) {
+    cv::Mat img;
+    if (!stream_ptr->GetParseDate(img)) {
+      continue;
+    }
+    cv::imwrite("./out/" + std::to_string(count_run_turn)+ ".jpg", img);
+    DLOG(INFO) << "BREAK" << stream_ptr->GetVideoFrames() << " " << count_run_turn;
+    count_run_turn++;
+  }
+
+  thread_stream.join();
+  LOG(INFO) << "Run SUCCESS!, run total turn: " << count_run_turn;
+}

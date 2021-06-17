@@ -24,9 +24,8 @@ include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Glog.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Gtest.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Protobuf.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_Opencv.cmake)
-if (${ENABLE_ENGINE_TYPE} MATCHES "TRT")
-    include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_FFmpeg.cmake)
-endif()
+include(${PROJECT_SOURCE_DIR}/cmake_dependency/External_FFmpeg.cmake)
+
 add_custom_target(third_party ALL DEPENDS ${third_party_deps})
 add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/base64encoding)
 

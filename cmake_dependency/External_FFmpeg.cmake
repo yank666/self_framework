@@ -28,14 +28,16 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
             --enable-small
             --enable-network
             --enable-mediacodec
-            --enable-avresample
             --enable-pic
+            --disable-avdevice
+            --disable-ffmpeg
+            --disable-ffprobe
             --disable-asm
+            --disable-avresample
             --disable-x86asm
             --disable-static
             --disable-neon
             --disable-hwaccels
-            --disable-gpl
             --disable-postproc
             --disable-doc
             --disable-symver
@@ -46,7 +48,6 @@ if (${ENABLE_ENGINE_TYPE} MATCHES "NB")
             --cpu=${CPU}
             --cc=${CC}
             --cxx=${CXX}
-            --strip=${STRIP}
             --enable-cross-compile
             --sysroot=${SYSROOT}
             --extra-cflags="-I$ASM -isysroot $SYSROOT -fPIC -D__thumb__ -mthumb -Wfatal-errors -Wno-deprecated -mfloat-abi=softfp -D__ANDROID_API__=28 -Os -marm"
@@ -73,7 +74,7 @@ else()
             )
 endif()
 
-set(FFMPEG_LIB_NAMES avcodec avdevice avfilter avformat avutil swscale)
+set(FFMPEG_LIB_NAMES avutil avformat avcodec avfilter swscale swresample)
 foreach(LIB ${FFMPEG_LIB_NAMES})
     set(FFMPEG_LIBS ${FFMPEG_LIBS} "${FFMPEG_INSTALL_DIR}/lib/lib${LIB}.so")
 endforeach()

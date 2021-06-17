@@ -59,7 +59,7 @@ bool UploadDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
                                 stream_info_)) {
     return false;
   }
-  LOG(INFO) << "Run Upload PreDecorate stage run success, cost"
+  DLOG(INFO) << "Run Upload PreDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
@@ -93,19 +93,9 @@ bool UploadDerocatestage::StagePostProcess(
     if (cur_id == -1) {
       continue;
     }
-    //    if (upload_struct_.count(cur_id) == 0) {
-    //      InitUpLoadJson(&json_val, conext_ptr, obj.detect_res_info[idx],
-    //                     detect_infos[idx]);
-    //      LOG(ERROR) << "=========Upload init==========================";
-    //    } else {
-    //      UpdataUpLoadJson(conext_ptr, obj.detect_res_info[idx],
-    //      detect_infos[idx]); LOG(ERROR) << "=========Upload
-    //      update==========================";
-    //    }
     UpdataUpLoadJson(conext_ptr, obj.detect_res_info[idx], detect_infos[idx]);
     SelectAttrofUploadJson(conext_ptr, obj.detect_res_info[idx],
                            detect_infos[idx]);
-    LOG(ERROR) << "=========Upload select11111111111==========================";
   }
 
   for (auto &json_item : upload_struct_) {
@@ -113,7 +103,7 @@ bool UploadDerocatestage::StagePostProcess(
     file << std::setw(4) << json_item.second << std::endl;
     file.close();
   }
-  LOG(INFO) << "Run Upload PostDecorate stage run success, cost"
+  DLOG(INFO) << "Run Upload PostDecorate stage run success, cost"
             << time_watch.stop() << "ms";
   return true;
 }
@@ -162,6 +152,8 @@ bool UploadDerocatestage::UpdataUpLoadJson(const contextPtr &conext_ptr,
     json_val["handpackageInfo"]["handpackageTrailLeftTopY"] = "";
     json_val["handpackageInfo"]["handpackageTrailRightBtmX"] = "";
     json_val["handpackageInfo"]["handpackageTrailRightBtmY"] = "";
+    json_val["bodyInfo"]["bodyProb"] = 0.0;
+    json_val["faceInfo"]["faceProb"]= 0.0;
   }
   json_val["endTimestamp"] = conext_ptr->time_stamp_;
   json_val["bodyInfo"]["bodyTrailNum"] = ++body_count;
@@ -242,7 +234,7 @@ void UploadDerocatestage::SelectAttrofUploadJson(const contextPtr &conext_ptr,
         PointInPolygon(bbox[j], stream_info_->config[regionIdx].polygon) ||
         is_in_poly;
     }
-    if (true) {
+    if (is_in_poly) {
       std::string shape_type = stream_info_->config[regionIdx].shapeType;
       if (!json_val["attributes"].contains(shape_type)) {
         json_val["attributes"][shape_type] = 1;
