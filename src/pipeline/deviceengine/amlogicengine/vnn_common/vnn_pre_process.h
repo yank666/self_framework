@@ -56,8 +56,7 @@ const vsi_nn_preprocess_map_element_t *vnn_GetPrePorcessMap();
 
 uint32_t vnn_GetPrePorcessMapCount();
 
-void vnn_SetChannelandMean(uint32_t channel_format, float *mean,
-                                 float *norm);
+void vnn_SetChannelandMean(uint32_t channel_format, float *mean, float *norm);
 
 #ifdef __cplusplus
 }

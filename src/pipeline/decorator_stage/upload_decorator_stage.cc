@@ -60,7 +60,7 @@ bool UploadDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
     return false;
   }
   DLOG(INFO) << "Run Upload PreDecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
@@ -104,7 +104,7 @@ bool UploadDerocatestage::StagePostProcess(
     file.close();
   }
   DLOG(INFO) << "Run Upload PostDecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
@@ -153,7 +153,7 @@ bool UploadDerocatestage::UpdataUpLoadJson(const contextPtr &conext_ptr,
     json_val["handpackageInfo"]["handpackageTrailRightBtmX"] = "";
     json_val["handpackageInfo"]["handpackageTrailRightBtmY"] = "";
     json_val["bodyInfo"]["bodyProb"] = 0.0;
-    json_val["faceInfo"]["faceProb"]= 0.0;
+    json_val["faceInfo"]["faceProb"] = 0.0;
   }
   json_val["endTimestamp"] = conext_ptr->time_stamp_;
   json_val["bodyInfo"]["bodyTrailNum"] = ++body_count;
@@ -168,7 +168,7 @@ bool UploadDerocatestage::UpdataUpLoadJson(const contextPtr &conext_ptr,
   json_val["bodyInfo"]["bodyTrailRightBtmY"] =
     AddValuetoJson(body_rby, std::to_string(detect.box.y2));
   json_val["bodyInfo"]["bodyQuality"] = detect.quality;
-  { // no use ,but need to set
+  {  // no use ,but need to set
     json_val["bodyInfo"]["bodyAttributes"] = "";
     json_val["bodyInfo"]["faceKeypointQuality"] = "";
     json_val["bodyInfo"]["feat"] = "";
@@ -183,7 +183,8 @@ bool UploadDerocatestage::UpdataUpLoadJson(const contextPtr &conext_ptr,
 
     cv::Mat roi =
       src(cv::Rect(detect.box.x1, detect.box.y1, detect.box.x2 - detect.box.x1,
-                   detect.box.y2 - detect.box.y1)).clone();
+                   detect.box.y2 - detect.box.y1))
+        .clone();
     json_val["bodyInfo"]["croppedPicBase64"] = MatBase64Encode(roi);
   }
   if (person.face_observeed) {

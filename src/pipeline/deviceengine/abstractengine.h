@@ -20,8 +20,8 @@ class Context {
   uint32_t input_w;
   uint32_t input_h;
   uint32_t batches;
-  std::string stream_id_ = "1111111111111";
-  std::string equipment_id_ = "222222222222222222";
+  std::string stream_id_;
+  std::string equipment_id_;
   long long time_stamp_ = 123;
   uint32_t frame_num_;
   std::vector<std::vector<char>> ori_data;
@@ -35,6 +35,9 @@ class Context {
 
   void TransmitContext(const std::shared_ptr<Context> dst_contest);
   void CopyContext(const std::shared_ptr<Context> dst_contest);
+  void SetHardwareInfo(const std::string &stream_id,
+                       const std::string &eq_id, const int &image_id,
+                       const long &timestap);
 };
 using contextPtr = std::shared_ptr<Context>;
 

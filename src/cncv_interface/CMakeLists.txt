@@ -1,6 +1,6 @@
-#file(GLOB_RECURSE DECODE_SRC "*.cc")
-set(DECODE_SRC yolov5_decoding.cc)
-add_library(decode STATIC ${DECODE_SRC})
-#target_link_libraries(decode Eigen3::Eigen)
-
-add_subdirectory(../pipeline)
+file(GLOB PARSE_CONFIG_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        "*.cc"
+        )
+add_library(cncv_person_detect SHARED ${PARSE_CONFIG_SRC_LIST})
+target_link_libraries(cncv_person_detect pipeline)
+target_link_libraries(cncv_person_detect ${OPENCV_LIBS})

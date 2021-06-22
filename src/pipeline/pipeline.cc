@@ -45,8 +45,7 @@ void Pipeline::RegisterEngine(const ModelCfgPtr &model_cfg) {
 
   std::string cur_model_name = model_cfg->model_name_;
   DecorStagePtr exec_stage_ptr =
-    DeviceInferenceFactory::GetInstance().GetDeviceInference(
-      cur_model_name);
+    DeviceInferenceFactory::GetInstance().GetDeviceInference(cur_model_name);
   if (exec_stage_ptr != nullptr) {
     exec_stage_ptr->AddProcess(model_inference_ptr);
     stages_[current_model_pos].push_back(exec_stage_ptr);
@@ -112,7 +111,7 @@ void Pipeline::DeliveryContext(const AbstractStagePtr &cur_staga,
   if (tail_stage_name.empty()) {
     return;
   }
-  for (const auto& stage_name : tail_stage_name) {
+  for (const auto &stage_name : tail_stage_name) {
     auto tail_context = GetStageContextbyName(stage_name);
     cur_context->TransmitContext(tail_context);
   }
@@ -172,6 +171,15 @@ contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name) {
     return process_ctx.second;
   }
   return nullptr;
+}
+
+void Pipeline::SetHardwareofContext(const std::string &stream_id,
+                                    const std::string &eq_id, const int &image_id,
+                                    const long &timestap) {
+  for (auto & stage : *(stages_.begin())) {
+    contextPtr ctx = GetStageContextbyName(stage->GetModelName());
+    ctx->SetHardwareInfo(stream_id, eq_id, image_id, timestap);
+  }
 }
 
 DeviceStage::DeviceStage(const ModelCfgPtr &model_cfg)

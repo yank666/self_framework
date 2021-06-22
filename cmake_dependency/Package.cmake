@@ -4,8 +4,10 @@ set(RUNTIME_COMPONENT_NAME "runtime_component")
 set(RUNTIME_BIN_DIR ${RUNTIME_PKG_NAME}/bin)
 set(RUNTIME_LIB_DIR ${RUNTIME_PKG_NAME}/lib)
 set(RUNTIME_INC_DIR ${RUNTIME_PKG_NAME}/include)
-install(FILES ${PROJECT_SOURCE_DIR}/src/pipeline/pipeline.h DESTINATION ${RUNTIME_INC_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
+install(FILES ${PROJECT_SOURCE_DIR}/src/cncv_interface/cncv_persondetect_interface.h DESTINATION ${RUNTIME_INC_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 
+install(FILES ${CMAKE_BINARY_DIR}/src/cncv_interface/libcncv_person_detect.so
+        DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/thirdparty/glog/lib/libglog.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 install(FILES ${CMAKE_BINARY_DIR}/thirdparty/protobuf/lib/libprotobuf.a
@@ -22,8 +24,8 @@ install(FILES ${CMAKE_BINARY_DIR}/thirdparty/tracker/libMOT_Tracker.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 
 if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/jni/include/ DESTINATION ${RUNTIME_INC_DIR}
-            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h")
+#    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/jni/include/ DESTINATION ${RUNTIME_INC_DIR}
+#            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h")
     install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/libs/armeabi-v7a/ DESTINATION ${RUNTIME_LIB_DIR}
             COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.so")
     install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/ffmpeg/lib/ DESTINATION ${RUNTIME_LIB_DIR}

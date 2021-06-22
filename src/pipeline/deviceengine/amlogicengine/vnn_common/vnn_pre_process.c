@@ -240,8 +240,7 @@ final:
   return;
 }
 
-void vnn_SetChannelandMean(uint32_t channel_format, float *mean,
-                                 float *norm) {
+void vnn_SetChannelandMean(uint32_t channel_format, float *mean, float *norm) {
   if (channel_format == 0) {
     channel_array[0] = 0;
     channel_array[1] = 1;

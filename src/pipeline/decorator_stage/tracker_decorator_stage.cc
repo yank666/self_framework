@@ -9,9 +9,7 @@
 #include "src/utils/common_struct.h"
 
 namespace pipeline {
-TrackerDerocatestage::TrackerDerocatestage() {
-  frame_idx_ = 0;
-}
+TrackerDerocatestage::TrackerDerocatestage() { frame_idx_ = 0; }
 
 TrackerDerocatestage::~TrackerDerocatestage() {
   if (tracker_api != nullptr) {
@@ -28,7 +26,7 @@ bool TrackerDerocatestage::StagePreProcess(
     tracker_api = tracker_init_with_config("config_person_mobile.json");
   }
   DLOG(INFO) << "Run Tracker predecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
@@ -76,7 +74,7 @@ bool TrackerDerocatestage::StagePostProcess(
     body_det.detect_res_info[body_det.num_detections].box.y2 =
       detect_infos[idx].body.y2;
     body_det.detect_res_info[body_det.num_detections].feature_len =
-      reid_context->out_dataflow_[idx].size() /sizeof (float);
+      reid_context->out_dataflow_[idx].size() / sizeof(float);
     memcpy(body_det.detect_res_info[body_det.num_detections].feature,
            reid_context->out_dataflow_[idx].data(),
            reid_context->out_dataflow_[idx].size());
@@ -86,14 +84,14 @@ bool TrackerDerocatestage::StagePostProcess(
                         conext_ptr->ori_data[0].data(),
                         conext_ptr->input_w * 3 * sizeof(uint8_t));
   cv::Mat clone = img.clone();
-  tracker_inference(&body_det, &body_track, frame_idx_++, clone.data, clone.cols,
-                    clone.rows, 3, tracker_api);
+  tracker_inference(&body_det, &body_track, frame_idx_++, clone.data,
+                    clone.cols, clone.rows, 3, tracker_api);
   conext_ptr->out_dataflow_.clear();
   conext_ptr->out_dataflow_.resize(1);
   conext_ptr->out_dataflow_[0].resize(sizeof(detect_res));
   memcpy(conext_ptr->out_dataflow_[0].data(), &body_track, sizeof(detect_res));
   DLOG(INFO) << "Run Tracker postdecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 REG_Stage(tracker, std::make_shared<TrackerDerocatestage>())

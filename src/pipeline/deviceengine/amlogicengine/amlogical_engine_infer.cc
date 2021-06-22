@@ -16,14 +16,13 @@ namespace device {
 AmlogicEngine::~AmlogicEngine() {
   vnn_ReleaseModel(self_graph_, true);
   if (dtype_data_ != nullptr) {
-    delete []dtype_data_;
-
+    delete[] dtype_data_;
   }
   if (input_data_ != nullptr) {
-    delete []input_data_;
+    delete[] input_data_;
   }
   if (transform_data_ != nullptr) {
-    delete []transform_data_;
+    delete[] transform_data_;
   }
 }
 
@@ -44,8 +43,8 @@ int AmlogicEngine::CreateGraph(const contextPtr &cur_context_ptr) {
     return -1;
   }
 
-  vsi_nn_tensor_t *input_tensor
-    = vsi_nn_GetTensor(self_graph_, self_graph_->input.tensors[0]);
+  vsi_nn_tensor_t *input_tensor =
+    vsi_nn_GetTensor(self_graph_, self_graph_->input.tensors[0]);
   uint32_t sz = vsi_nn_GetElementNum(input_tensor);
   uint32_t stride = vsi_nn_TypeGetBytes(input_tensor->attr.dtype.vx_type);
 

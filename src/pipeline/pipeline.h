@@ -96,6 +96,10 @@ class Pipeline {
                           const uint32_t &input_width,
                           const uint32_t &input_height);
   contextPtr GetStageContextbyName(const std::string &stage_name);
+  void SetHardwareofContext(const std::string &stream_id,
+                            const std::string &eq_id, const int &image_id,
+                            const long &timestap);
+
   bool GetStatusofPipeline() { return is_ready_.load(); }
   void DeliveryContext(const AbstractStagePtr &cur_staga,
                        const contextPtr &cur_context);
@@ -114,5 +118,6 @@ class Pipeline {
   std::vector<std::vector<AbstractStagePtr>> stages_;
   ProcessContextMap process_context_;
 };
+using pipelinePtr = std::shared_ptr<Pipeline>;
 }  // namespace pipeline
 #endif  // SELF_ARCHITECTURE_PIPELINE_H

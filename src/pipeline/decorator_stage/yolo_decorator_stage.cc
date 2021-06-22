@@ -144,7 +144,7 @@ bool YoloDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
   MakeGridNp();
 
   DLOG(INFO) << "Run Yolo PostDecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
@@ -339,7 +339,8 @@ void YoloDerocatestage::ObtainBoxAndScore(
     body_info.related_box.x2 =
       StrictScale(body_info.related_box.x1 +
                     output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 3],
-                  kInw);;
+                  kInw);
+    ;
     body_info.related_box.y2 =
       StrictScale(body_info.related_box.y1 +
                     output[idx * kOutActualShape[0][3] + kClassifyNum + 5 + 4],
@@ -618,7 +619,8 @@ bool YoloDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   TimeWatch time_watch;
   time_watch.start();
   auto outputs_vecs = conext_ptr->out_dataflow_;
-  if (outputs_vecs.size() != 1 || outputs_vecs[0].size() != kTotalOut * sizeof(float)) {
+  if (outputs_vecs.size() != 1 ||
+      outputs_vecs[0].size() != kTotalOut * sizeof(float)) {
     LOG(ERROR) << "YoloDerocatestage get error input!";
     return false;
   }

@@ -27,9 +27,9 @@ endforeach()
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
 
 add_subdirectory(thirdparty/tracker)
-add_subdirectory(src/pipeline)
 add_subdirectory(src/parse)
-
+add_subdirectory(src/pipeline)
+add_subdirectory(src/cncv_interface)
 if (BUILD_TESTCASE)
     add_subdirectory(tests)
 endif()

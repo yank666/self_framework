@@ -26,7 +26,6 @@ class AmlogicEngine : public AbstractEngine {
   uint8_t *dtype_data_{nullptr};
   float *input_data_{nullptr};
   float *transform_data_{nullptr};
-
 };
 }  // namespace device
 #endif  // SELF_ARCHITECTURE_AMLOGICAL_ENGINE_INFER_H

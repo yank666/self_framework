@@ -36,6 +36,15 @@ void Context::CopyContext(const std::shared_ptr<Context> dst_contest) {
   dst_contest->input_h = input_h;
 }
 
+void Context::SetHardwareInfo(const std::string &stream_id,
+                              const std::string &eq_id, const int &image_id,
+                              const long &timestap) {
+  stream_id_ = stream_id;
+  equipment_id_ = eq_id;
+  frame_num_ = image_id;
+  time_stamp_ = timestap;
+}
+
 bool AbstractEngine::SetModelCfg(device::ModelCfgPtr model_cfg_ptr) {
   if (model_cfg_ptr == nullptr) {
     LOG(ERROR) << "Engine Set modelcfg fail, because model_cfg_ptr is nullptr";

@@ -34,7 +34,7 @@ bool ReidDerocatestage::StagePreProcess(const contextPtr &conext_ptr,
                 kReidWidth * kReidHeight * kReidChannel * sizeof(uchar));
   }
   DLOG(INFO) << "Run Reid predecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
@@ -44,7 +44,7 @@ bool ReidDerocatestage::StagePostProcess(const contextPtr &conext_ptr,
   TimeWatch time_watch;
   time_watch.start();
   DLOG(INFO) << "Run Reid postdecorate stage run success, cost"
-            << time_watch.stop() << "ms";
+             << time_watch.stop() << "ms";
   return true;
 }
 
