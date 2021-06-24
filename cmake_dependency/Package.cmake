@@ -24,14 +24,10 @@ install(FILES ${CMAKE_BINARY_DIR}/thirdparty/tracker/libMOT_Tracker.so
         DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
 
 if(${ENABLE_ENGINE_TYPE} MATCHES "NB")
-#    install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/jni/include/ DESTINATION ${RUNTIME_INC_DIR}
-#            COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.h")
     install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/opencv/sdk/native/libs/armeabi-v7a/ DESTINATION ${RUNTIME_LIB_DIR}
             COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.so")
     install(DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/ffmpeg/lib/ DESTINATION ${RUNTIME_LIB_DIR}
             COMPONENT ${RUNTIME_COMPONENT_NAME} FILES_MATCHING PATTERN "*.so")
-    install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ddk/lib/armeabi-v7a/libjpeg_amlogical_common.so
-            DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(FILES ${PROJECT_SOURCE_DIR}/thirdparty/ddk/lib/armeabi-v7a/libovxlib.so
             DESTINATION ${RUNTIME_LIB_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(FILES ${ANDROID_NDK}/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++_shared.so
@@ -49,8 +45,6 @@ if(BUILD_TESTCASE)
     install(TARGETS test_st RUNTIME
             DESTINATION ${RUNTIME_BIN_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(TARGETS test_ut RUNTIME
-            DESTINATION ${RUNTIME_BIN_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
-    install(FILES ${PROJECT_SOURCE_DIR}/modules/config_file/models.cfg
             DESTINATION ${RUNTIME_BIN_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})
     install(FILES ${PROJECT_SOURCE_DIR}/modules/config_file/models.cfg
             DESTINATION ${RUNTIME_BIN_DIR} COMPONENT ${RUNTIME_COMPONENT_NAME})

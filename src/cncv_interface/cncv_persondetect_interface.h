@@ -4,26 +4,26 @@
 
 #ifndef SELF_ARCHITECTURE_CNCV_OPENINGTIME_INTERFACE_H
 #define SELF_ARCHITECTURE_CNCV_OPENINGTIME_INTERFACE_H
-#include "json/json.hpp"
-#include <string>
 
 
-constexpr int CNCV_VERSION_MAJOR = 1;
-constexpr int CNCV_VERSION_MINOR = 0;
-constexpr int CNCV_VERSION_PATCH = 0;
-constexpr char CNCV_BUILD_TIME[] = " Built:2021-06-30 00:00:00";
+extern "C" {
+struct CNCVImageInfo{
+  long timeStamp;
+  void* BgrBuffer;
+  void* YuvBuffer;
+  int image_width;
+  int image_height;
+  int image_channel;
+};
 
-using json = nlohmann::json;
-
-inline std::string CNCVPersonDetectVersion(){
-  return "v" + std::to_string(CNCV_VERSION_MAJOR) + "." +
-         std::to_string(CNCV_VERSION_MINOR) + "." +
-         std::to_string(CNCV_VERSION_PATCH) + CNCV_BUILD_TIME;
-}
+const char* CNCVPersonDetectVersion();
 
 int CNCVPersonDetectInit(char *json_str);
 
-json CNCVPersonDetectProcess(char *json_str);
+char *CNCVPersonDetectProcess(const CNCVImageInfo &img_info, char *json_str);
 
-int CNCVInitImageInfo(const json &image_info);
+int CNCVPersonDetectDeinit();
+}
+
+
 #endif  // SELF_ARCHITECTURE_CNCV_OPENINGTIME_INTERFACE_H

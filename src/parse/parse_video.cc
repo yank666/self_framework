@@ -73,7 +73,7 @@ int ParseVideo::ParseVideoFromStream(const std::string stream_file,
   be_ready_ = false;
   return RET_OK;
 }
-
+#ifdef FFMPEG_TEST
 int ParseVideo::ParseVideoByFFmpeg(const std::string stream_file) {
   AVFormatContext *pFormatCtx;
   int videoindex;
@@ -179,6 +179,8 @@ int ParseVideo::ParseVideoByFFmpeg(const std::string stream_file) {
   be_ready_ = false;
   return 0;
 }
+#endif
+
 bool ParseVideo::GetParseDate(cv::Mat &result) {
   if (frame_list_->size() == 0) {
     return false;
