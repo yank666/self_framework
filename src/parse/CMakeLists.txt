@@ -1,3 +1,6 @@
+if (BUILD_TESTCASE)
+    add_compile_definitions(FFMPEG_TEST)
+endif()
 file(GLOB PARSE_CONFIG_SRC_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         "*.cc"
     )

@@ -35,9 +35,8 @@ class Context {
 
   void TransmitContext(const std::shared_ptr<Context> dst_contest);
   void CopyContext(const std::shared_ptr<Context> dst_contest);
-  void SetHardwareInfo(const std::string &stream_id,
-                       const std::string &eq_id, const int &image_id,
-                       const long &timestap);
+  void SetHardwareInfo(const std::string &stream_id, const std::string &eq_id,
+                       const int &image_id, const long &timestap);
 };
 using contextPtr = std::shared_ptr<Context>;
 

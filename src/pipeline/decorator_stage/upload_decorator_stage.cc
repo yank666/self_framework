@@ -4,6 +4,7 @@
 
 #include "upload_decorator_stage.h"
 #include <algorithm>
+#include <fstream>
 #include "glog/logging.h"
 #include "src/pipeline/stage_register.h"
 #include "src/utils/common_struct.h"
@@ -99,7 +100,8 @@ bool UploadDerocatestage::StagePostProcess(
   }
 
   for (auto &json_item : upload_struct_) {
-    std::ofstream file(std::to_string(json_item.first) + "key.json");
+    std::string file_name = std::to_string(json_item.first) + "key.json";
+    std::ofstream file(file_name);
     file << std::setw(4) << json_item.second << std::endl;
     file.close();
   }

@@ -174,9 +174,9 @@ contextPtr Pipeline::GetStageContextbyName(const std::string &stage_name) {
 }
 
 void Pipeline::SetHardwareofContext(const std::string &stream_id,
-                                    const std::string &eq_id, const int &image_id,
-                                    const long &timestap) {
-  for (auto & stage : *(stages_.begin())) {
+                                    const std::string &eq_id,
+                                    const int &image_id, const long &timestap) {
+  for (auto &stage : *(stages_.begin())) {
     contextPtr ctx = GetStageContextbyName(stage->GetModelName());
     ctx->SetHardwareInfo(stream_id, eq_id, image_id, timestap);
   }

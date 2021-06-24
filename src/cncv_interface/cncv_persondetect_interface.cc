@@ -88,7 +88,7 @@ char *CNCVPersonDetectProcess(const CNCVImageInfo &img_info, char *json_str) {
     std::string encode_img = image_info["encodeData"].get<std::string>();
     std::string decode_img = base64_decode(encode_img);
     std::vector<char> base64_img(decode_img.begin(), decode_img.end());
-    cv::Mat input_img = cv::imdecode(base64_img, CV_LOAD_IMAGE_COLOR);
+    cv::Mat input_img = cv::imdecode(base64_img, cv::IMREAD_COLOR);
     if (!image_info.contains("width")) {
       return nullptr;
     }

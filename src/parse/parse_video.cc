@@ -8,6 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "src/utils/errorcode.h"
 #include "src/utils/base.h"
+#ifdef FFMPEG_TEST
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +20,7 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
+#endif
 namespace pipeline {
 constexpr uint32_t kMaxBufferSize = 20;
 constexpr uint32_t kMillisecondUnit = 1000;
@@ -47,7 +48,7 @@ int ParseVideo::ParseVideoFromStream(const std::string stream_file,
   frame_list_ = std::make_shared<CircleBuffer<cv::Mat>>(max_);
   REPORT_EXCEPTION_IF_NULL(frame_list_);
 
-  stream_frames_ = capture.get(CV_CAP_PROP_FRAME_COUNT);
+  stream_frames_ = capture.get(cv::CAP_PROP_FRAME_COUNT);
   stream_width_ = capture.get(cv::CAP_PROP_FRAME_WIDTH);
   stream_height_ = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
   cv::Mat frame;
