@@ -1,0 +1,32 @@
+message("External project: Gtest")
+
+FetchContent_Declare(
+		gtest
+		GIT_REPOSITORY "http://gitlab.alibaba-inc.com/common-thirdparty-fork/googletest.git"
+		GIT_TAG release-1.11.0
+)
+
+FetchContent_GetProperties(gtest)
+if(NOT gtest_POPULATED)
+	FetchContent_Populate(gtest)
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles"
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF
+		-DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+		-DCMAKE_MACOSX_RPATH=TRUE -Dgtest_disable_pthreads=ON
+		-DCMAKE_INSTALL_PREFIX=${gtest_BINARY_DIR} .
+		WORKING_DIRECTORY ${gtest_SOURCE_DIR}
+		RESULT_VARIABLE RESULT)
+
+execute_process(COMMAND "${CMAKE_COMMAND}" --build . --target install -j${THNUM}
+		WORKING_DIRECTORY ${gtest_SOURCE_DIR})
+
+INCLUDE_DIRECTORIES(${gtest_BINARY_DIR}/include)
+ADD_LIBRARY(gtest::gtest SHARED IMPORTED GLOBAL)
+SET(GTEST_LIBRARIES "${gtest_BINARY_DIR}/${INSTALL_LIB_PATH}/libgtest.${INSTALL_LIB_FORMAT}"
+		CACHE FILEPATH "gtest library." FORCE)
+SET_PROPERTY(TARGET gtest::gtest PROPERTY IMPORTED_LOCATION ${GTEST_LIBRARIES})
+ADD_LIBRARY(gtest::gtest_main SHARED IMPORTED GLOBAL)
+SET(GTEST_MAIN_LIBRARIES "${gtest_BINARY_DIR}/${INSTALL_LIB_PATH}/libgtest_main.${INSTALL_LIB_FORMAT}"
+		CACHE FILEPATH "gtest library." FORCE)
+SET_PROPERTY(TARGET gtest::gtest_main PROPERTY IMPORTED_LOCATION ${GTEST_MAIN_LIBRARIES})
